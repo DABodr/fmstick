@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: empty RadioText sent as spaces, A/B flag toggled per message.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2021,6 +2022,9 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtPlusInfo(int content1, 
 }
 
 
+/* RadioText A/B flag (bit 4 of block B), toggled for each new message */
+static uint8_t rtTextAB = 0;
+
 EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtMessage(const char *messages)
 {
     uint8_t i, avaliableBytes, msgChars, blockPtr;
@@ -2049,10 +2053,9 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtMessage(const char *mes
         return (fmtxCmdStatus);
     }
 
-    //return if msg is empty (we cleared circular buffer)
-    //TODO: check if we must force RT to be whilteline only (so we remove all RT content this way).
-    if(!msgChars)
-        return (fmtxCmdStatus);
+    /* An empty message is sent as 64 spaces: receivers keep showing the
+       last RadioText they got, so just stopping the RT groups would leave
+       the old text on their display. */
 
     avaliableBytes = buff[2];
     if (avaliableBytes < 64) {
@@ -2063,10 +2066,17 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtMessage(const char *mes
     }
 
     memcpy(msg, messages, msgChars);
+    /* Toggle the text A/B flag for each new message, so receivers clear the
+       previous text instead of mixing it with the new one (EN 50067, 3.1.5.3).
+       The EEPROM image keeps flag A: fmtxRDSGetRtMessage() expects it. */
+    if(fmtxCmdSpecial != FMTX_SPECIAL_EEPROM)
+        rtTextAB ^= 0x10;
     for(i=0;i<16;i++){
             blockPtr = i*4;
 
-            if(fmtxIoAppCommand(TX_RDS_BUFF, buff, 7, TX_RDS_BUFF_IN_LDBUFF, 0x20, i, msg[blockPtr], msg[blockPtr+1], msg[blockPtr+2], msg[blockPtr+3]) != FMTX_MODE_OK){
+            if(fmtxIoAppCommand(TX_RDS_BUFF, buff, 7, TX_RDS_BUFF_IN_LDBUFF, 0x20,
+                                (fmtxCmdSpecial == FMTX_SPECIAL_EEPROM ? 0 : rtTextAB) | i,
+                                msg[blockPtr], msg[blockPtr+1], msg[blockPtr+2], msg[blockPtr+3]) != FMTX_MODE_OK){
                 fmtxCmdStatus=FMTX_MODE_NONE;
                 return (fmtxCmdStatus);
             }
