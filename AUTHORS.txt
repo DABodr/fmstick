@@ -8,3 +8,7 @@ N: Serge
 E: piratfm AT gmail DOT com
 C: tipok
 D: All of the code
+
+N: Aurel
+D: Qt6 port, hidapi close() crash fix, USB volume handling for
+D: Vast HiFi-FMT transmitters (2026)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Modified 2026-11-25 by Aurel: port to Qt6. (FmStick)
 ** All rights reserved.
 **
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -40,7 +41,7 @@
 
 #include "qtsingleapplication.h"
 #include "qtlocalpeer.h"
-#include <QtGui/QWidget>
+#include <QWidget>
 
 
 /*!
@@ -151,8 +152,9 @@ void QtSingleApplication::sysInit(const QString &appId)
 */
 
 QtSingleApplication::QtSingleApplication(int &argc, char **argv, bool GUIenabled)
-    : QApplication(argc, argv, GUIenabled)
+    : QApplication(argc, argv)
 {
+    Q_UNUSED(GUIenabled);
     sysInit();
 }
 
@@ -170,16 +172,6 @@ QtSingleApplication::QtSingleApplication(const QString &appId, int &argc, char *
 }
 
 
-/*!
-    Creates a QtSingleApplication object. The application identifier
-    will be QCoreApplication::applicationFilePath(). \a argc, \a
-    argv, and \a type are passed on to the QAppliation constructor.
-*/
-QtSingleApplication::QtSingleApplication(int &argc, char **argv, Type type)
-    : QApplication(argc, argv, type)
-{
-    sysInit();
-}
 
 
 #if defined(Q_WS_X11)

@@ -1,13 +1,15 @@
 #-------------------------------------------------
 #
 # Project created by QtCreator 2011-10-05T01:35:53
+# Modified 2026-11-25 by Aurel: port to Qt6.
+# Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
 include(qtsingleapplication/src/qtsingleapplication.pri)
 include(QtWebApp-v1.2.9/lib/bfHttpServer/src/bfHttpServer.pri)
 
-QT       += core gui
+QT       += core gui widgets network
 
 TEMPLATE = app
 
@@ -55,7 +57,9 @@ SOURCES +=\
     mainwindow_rds.cpp \
     mainwindow_http.cpp \
     mainwindow_helpers.cpp \
-    mainwindow_actions.cpp
+    mainwindow_actions.cpp \
+    mainwindow_usbvolume.cpp \
+    usbvolume.c
 
 mac: SOURCES += hidmac.c
 win32: SOURCES += hidwin.cpp
@@ -70,6 +74,7 @@ HEADERS +=\
     fmtx.h \
     querier.h \
     bitstream.h \
+    usbvolume.h \
     requestmapper.h \
     controller/txcontroller.h \
     controller/rdscontroller.h \
@@ -91,6 +96,9 @@ win32:LIBS += -lsetupapi
 linux-g++* {
     CONFIG += link_pkgconfig
     PKGCONFIG += libusb-1.0
+    # USB audio volume of the Vast HiFi-FMT (it scales the audio deviation)
+    PKGCONFIG += alsa
+    DEFINES += HAVE_ALSA
 }
 
 win32 {

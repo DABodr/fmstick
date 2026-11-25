@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ */
 
 #include "mainwindow.h"
 #include "querier.h"
@@ -17,6 +21,7 @@ void MainWindow::DisplayTransmitterEditor(void)
     double freq=0.0;
     double rfcap=0;
     int fmtxStatus=0;
+    uint32_t audioDeviation=0;
 
     qDebug() << "Reading Transmitter info...";
 
@@ -26,8 +31,10 @@ void MainWindow::DisplayTransmitterEditor(void)
     ui->comboBox_transmitter_preemph->setCurrentIndex(fmtxTransmitterGetPreemphasisId());
     if(fmtxCmdStatus!=FMTX_MODE_OK) goto display_transmitter_err;
 
-    ui->spinBox_transmitter_audioDev->setValue(fmtxTransmitterGetAudioDeviation());
+    audioDeviation = fmtxTransmitterGetAudioDeviation();
     if(fmtxCmdStatus!=FMTX_MODE_OK) goto display_transmitter_err;
+    /* undo the firmware's scaling by the USB volume, see usbvolume.h */
+    ui->spinBox_transmitter_audioDev->setValue(audioDeviationFromDevice(audioDeviation));
 
     ui->checkBox_transmitter_pilot->setChecked(transmitterFlags & TX_COMPONENT_ENABLE_PILOT_MASK);
     toggleTransmitPilot(transmitterFlags & TX_COMPONENT_ENABLE_PILOT_MASK);

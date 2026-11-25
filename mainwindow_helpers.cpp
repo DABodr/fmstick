@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: port to Qt6.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +24,7 @@
 #include <cstdlib>
 
 #include <QMouseEvent>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "fmtx.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -93,7 +94,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     QWidget::mouseMoveEvent(event);
     if(!is_normal && moving)
-        this->move(event->globalPos() - offset);
+        this->move(event->globalPosition().toPoint() - offset);
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
@@ -178,7 +179,7 @@ void MainWindow::SetRunAtStartup(int iVal)
             out << "Type=Application\n";
             out << "Name=FmStick\n";
             out << "Comment=FmStick Transmitter Control Application\n";
-            out << QString("Exec='%1'\n").arg(QCoreApplication::applicationFilePath()).toAscii();
+            out << QString("Exec='%1'\n").arg(QCoreApplication::applicationFilePath()).toLatin1();
             out << "NoDisplay=false\n";
             out << "Hidden=false\n";
 
@@ -325,7 +326,7 @@ void MainWindow::SetWindowMode(bool normal)
     }
 #else
     if(normal) {
-        flags = 0;
+        flags = Qt::WindowFlags();
     } else {
         flags = Qt::CustomizeWindowHint;
         if(ui->checkBox_be_on_the_top->isChecked())
@@ -653,7 +654,7 @@ void MainWindow::switchLanguage(QAction *action)
 #endif
 
     appTranslator.load("fmstick_" + locale, qmDir.absolutePath());
-    qtTranslator.load("qt_" + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    qtTranslator.load("qt_" + locale, QLibraryInfo::path(QLibraryInfo::TranslationsPath));
     qApp->installTranslator(&appTranslator);
     qApp->installTranslator(&qtTranslator);
     retranslateUi();

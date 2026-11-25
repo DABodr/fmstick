@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: port to Qt6.
 */
 
 #include "httpsession.h"
@@ -13,7 +14,7 @@ HttpSession::HttpSession(bool canStore) {
         dataPtr=new HttpSessionData();
         dataPtr->refCount=1;
         dataPtr->lastAccess=QDateTime::currentMSecsSinceEpoch();
-        dataPtr->id=QUuid::createUuid().toString().toAscii();
+        dataPtr->id=QUuid::createUuid().toString().toLatin1();
 #ifdef SUPERVERBOSE
         qDebug("HttpSession: created new session data with id %s",dataPtr->id.data());
 #endif

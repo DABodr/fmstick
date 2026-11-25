@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: port to Qt6.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +24,9 @@
 #ifndef QUERIER_H
 #define QUERIER_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QObject>
+#include <QRegularExpression>
 //#include <QThread>
 //due: http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 //When shouldnt I use threads?
@@ -38,10 +40,10 @@ public:
     //void run(); // this is virtual method, we must implement it in our subclass of QThread
 
     QString rdsRTFile;
-    QRegExp rdsRTPlusContent1RegExp;
-    QRegExp rdsRTPlusContent2RegExp;
-    QRegExp rdsRTPlusContent3RegExp;
-    QRegExp rdsRTPlusContent4RegExp;
+    QRegularExpression rdsRTPlusContent1RegExp;
+    QRegularExpression rdsRTPlusContent2RegExp;
+    QRegularExpression rdsRTPlusContent3RegExp;
+    QRegularExpression rdsRTPlusContent4RegExp;
     int rdsRTPlusContent1Type;
     int rdsRTPlusContent2Type;
     int rdsRTPlusContent3Type;
@@ -56,7 +58,7 @@ public:
     bool is_ready;
     bool device_lost;
     bool still_not_exists;
-    bool parse_rtplus_items(QString &rtPlusLine, QRegExp &rtPlusRegExp, int item_id, QList<int> &itemsList);
+    bool parse_rtplus_items(QString &rtPlusLine, QRegularExpression &rtPlusRegExp, int item_id, QList<int> &itemsList);
 
 signals:
     void setASQOvermod(bool);

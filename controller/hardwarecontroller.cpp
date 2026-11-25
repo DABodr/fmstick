@@ -1,6 +1,7 @@
 /**
   @file
   @author tipok
+  Modified 2026-11-25 by Aurel: port to Qt6.
 */
 
 #include "hardwarecontroller.h"
@@ -51,16 +52,16 @@ void HardwareController::service(HttpRequest& request, HttpResponse& response) {
 
     QString action(request.getParameter("action"));
 
-    bool have_any_action=FALSE;
+    bool have_any_action=false;
     if (map.contains(action)) {
         TableItem *table_data = map.value(action);
         response.write(table_data->doHTMLParse(&request));
-        have_any_action=TRUE;
+        have_any_action=true;
     }
 
     if(!have_any_action && action == "Hardware_custom"){
         qDebug() << "TODO: custom_Hardware action";
-        have_any_action=TRUE;
+        have_any_action=true;
     }
     if(have_any_action){
         response.write("<br/><a href=\"/hw\">[Back To Hardware Section]</a> | <a href=\"/\">[Back To Main Section]</a>");
