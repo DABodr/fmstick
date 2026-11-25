@@ -1,6 +1,7 @@
 /*
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ * Modified 2026-11-25 by Aurel: release the USB lock when setting the power fails.
  */
 
 #include "mainwindow.h"
@@ -251,11 +252,11 @@ int MainWindow::SetTransmitPower()
     } else {
         ret=fmtxTransmitterSetTunePower(ui->spinBox_transmitter_power->value(), 0.0);
     }
+    querier->HidAccessMutex.unlock();
     if(ret != FMTX_MODE_OK){
         qDebug() << "Can't set transmitter power and capacitor";
         SetTransmitIcon(ICON_WARN);
-    } else
-    querier->HidAccessMutex.unlock();
+    }
 
     querier->timer.setInterval(2000);
     return ret;
