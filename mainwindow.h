@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -244,6 +245,7 @@ private:
 
     QDir directoryOf(const QString &subdir);
     void createLanguageMenu();
+    QDir translationsDir();
     void retranslateUi();
     void readSettings(QSettings *reader, bool txOnly);
     void writeSettings(QSettings *writer, bool txOnly);

@@ -6,6 +6,7 @@
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ * Modified 2026-11-25 by Aurel: apply the saved language at startup.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -355,6 +356,7 @@ void MainWindow::readFromConfig()
 
     createLanguageMenu();
     ui->actionSelect_Language->setMenu(languageMenu);
+    switchLanguage(NULL);   /* apply the saved (or system) language */
 
     setupTrayIcon();
     SetWindowMode(!ui->checkBox_mini_mode->isChecked());

@@ -6,6 +6,7 @@
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: the About box gives the right license (GPL v2).
+ * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -567,6 +568,24 @@ void MainWindow::SetRunEepromCfg(bool bVal)
 
 
 
+/* Installed translations, else the ones next to the binary or in the
+   source tree (running from a build directory). */
+QDir MainWindow::translationsDir()
+{
+    QStringList candidates;
+#ifdef TRANSLATIONSPATH
+    candidates << TRANSLATIONSPATH;
+#endif
+    candidates << directoryOf("translations").absolutePath()
+               << QDir(QApplication::applicationDirPath() + "/../translations").absolutePath();
+    for (const QString &path : candidates) {
+        QDir dir(path);
+        if (!dir.entryList(QStringList("fmstick_*.qm")).isEmpty())
+            return dir;
+    }
+    return QDir(candidates.first());
+}
+
 QDir MainWindow::directoryOf(const QString &subdir)
 {
     QDir dir(QApplication::applicationDirPath());
@@ -611,11 +630,7 @@ void MainWindow::createLanguageMenu()
         action->setChecked(true);
 
     /* look for other translations */
-#ifdef TRANSLATIONSPATH
-    QDir qmDir = QDir(TRANSLATIONSPATH);
-#else
-    QDir qmDir = directoryOf("translations");
-#endif
+    QDir qmDir = translationsDir();
     QStringList fileNames = qmDir.entryList(QStringList("fmstick_*.qm"));
     for (int i = 0; i < fileNames.size(); ++i) {
         QString locale = fileNames[i];
@@ -648,11 +663,7 @@ void MainWindow::switchLanguage(QAction *action)
     } else if(UsedLanguage == "auto")
         locale = QLocale::system().name();
 
-#ifdef TRANSLATIONSPATH
-    QDir qmDir = QDir(TRANSLATIONSPATH);
-#else
-    QDir qmDir = directoryOf("translations");
-#endif
+    QDir qmDir = translationsDir();
 
     appTranslator.load("fmstick_" + locale, qmDir.absolutePath());
     qtTranslator.load("qt_" + locale, QLibraryInfo::path(QLibraryInfo::TranslationsPath));
