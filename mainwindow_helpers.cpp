@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: the About box gives the right license (GPL v2).
  * Modified 2026-11-25 by Aurel: find translations next to the binary too.
+ * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +31,7 @@
 #include "fmtx.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "simpleview.h"
 
 #ifdef Q_WS_WIN
 #include <windows.h>
@@ -295,7 +297,7 @@ void MainWindow::toggleWindowMode()
 
 void MainWindow::SetWindowMode(bool normal)
 {
-    ui->tabWidget->setVisible(normal);
+    simpleView->setMiniMode(!normal);
     ui->menuBar->setVisible(normal);
     if(toolBarIsVisible)
         ui->toolBar->setVisible(normal);
@@ -462,7 +464,7 @@ void MainWindow::UpdateFirmware()
 /**********************************************************
  * EEPROM READ/SAVE
  **********************************************************/
-void MainWindow::SaveEEPROMParams()
+bool MainWindow::SaveEEPROMParams()
 {
     int ret;
     qDebug() << __FUNCTION__;
@@ -474,7 +476,7 @@ void MainWindow::SaveEEPROMParams()
 
     if(ret != QMessageBox::Yes) {
         qDebug() << "Aborted";
-        return;
+        return false;
     }
 
     bool is_ready_save = querier->is_ready;
@@ -492,13 +494,14 @@ void MainWindow::SaveEEPROMParams()
     if(ret != FMTX_MODE_OK){
         qDebug() << __FUNCTION__ << " write error!";
         QMessageBox::warning(this, tr("Can't write EEPROM"), tr("Error while writing EEPROM Config!"));
-        return;
+        return false;
     }
 
     qDebug() << __FUNCTION__ << "saved!";
     QMessageBox::information(this, tr("Write successed"), tr("EEPROM Config written successfuly!\n"
                                                              "You may restart device to run\n"
                                                              "configuration from EEPROM."));
+    return true;
 }
 
 void MainWindow::ShowEEPROMParams()

@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: apply the saved language at startup.
+ * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +40,7 @@
 
 #include "fmtx.h"
 #include "logging.h"
+#include "simpleview.h"
 
 #define REVISION   "$Rev: 268 $"
 
@@ -71,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     setupUsbVolumeUi();
+    simpleView = new SimpleView(this, ui);
+    simpleView->install();
 
     ui->lineEdit_sw_ver->setText(CurrentVersion);
     ui->checkBox_sw_runAtStartup->setChecked(GetRunAtStartup());
@@ -544,6 +548,7 @@ void MainWindow::RedrawEverything(bool bFound)
     this->resize(1,1);
     this->updateGeometry();
     querier->is_ready=true;
+    simpleView->markClean();
 
     qDebug() << "Redraw everything done! transmitting: " << transmitting;
     if(!is_normal || !this->isVisible())

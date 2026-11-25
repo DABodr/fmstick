@@ -3,6 +3,7 @@
 # Project created by QtCreator 2011-10-05T01:35:53
 # Modified 2026-11-25 by Aurel: port to Qt6.
 # Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+# Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
@@ -59,6 +60,7 @@ SOURCES +=\
     mainwindow_helpers.cpp \
     mainwindow_actions.cpp \
     mainwindow_usbvolume.cpp \
+    simpleview.cpp \
     usbvolume.c
 
 mac: SOURCES += hidmac.c
@@ -75,6 +77,7 @@ HEADERS +=\
     querier.h \
     bitstream.h \
     usbvolume.h \
+    simpleview.h \
     requestmapper.h \
     controller/txcontroller.h \
     controller/rdscontroller.h \

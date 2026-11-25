@@ -11,4 +11,5 @@ D: All of the code
 
 N: Aurel
 D: Qt6 port, hidapi close() crash fix, USB volume handling for
-D: Vast HiFi-FMT transmitters (2026)
+D: Vast HiFi-FMT transmitters, simple main screen, French
+D: translation (2026)

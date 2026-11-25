@@ -23,11 +23,7 @@
 
 void MainWindow::setupUsbVolumeUi()
 {
-    usbVolGroup = new QGroupBox(tr("USB Volume"), this);
-    usbVolGroup->setToolTip(tr("The volume of the transmitter's USB sound card.\n"
-                               "The device firmware multiplies the audio deviation by this volume:\n"
-                               "at maximum the deviation is the one set in the Transmitter tab,\n"
-                               "at 0 nothing is modulated (carrier and RDS only, no sound)."));
+    usbVolGroup = new QGroupBox(this);
 
     usbVolSlider = new QSlider(Qt::Horizontal, usbVolGroup);
     usbVolSlider->setRange(0, 31);
@@ -48,7 +44,7 @@ void MainWindow::setupUsbVolumeUi()
     usbVolWarningLabel->setStyleSheet("QLabel { color: #c62828; font-weight: bold; }");
     usbVolWarningLabel->hide();
 
-    usbVolMaxOnConnect = new QCheckBox(tr("Set to maximum on connect"), usbVolGroup);
+    usbVolMaxOnConnect = new QCheckBox(usbVolGroup);
     usbVolMaxOnConnect->setChecked(true);
 
     QVBoxLayout *layout = new QVBoxLayout(usbVolGroup);
@@ -66,6 +62,17 @@ void MainWindow::setupUsbVolumeUi()
     /* the volume also changes from outside (system mixer, PulseAudio...) */
     connect(&usbVolTimer, SIGNAL(timeout()), this, SLOT(refreshUsbVolume()));
     usbVolTimer.start(1000);
+    retranslateUsbVolumeUi();
+}
+
+void MainWindow::retranslateUsbVolumeUi()
+{
+    usbVolGroup->setTitle(tr("USB Volume"));
+    usbVolGroup->setToolTip(tr("The volume of the transmitter's USB sound card.\n"
+                               "The device firmware multiplies the audio deviation by this volume:\n"
+                               "at maximum the deviation is the one set in the Transmitter tab,\n"
+                               "at 0 nothing is modulated (carrier and RDS only, no sound)."));
+    usbVolMaxOnConnect->setText(tr("Set to maximum on connect"));
     refreshUsbVolume();
 }
 

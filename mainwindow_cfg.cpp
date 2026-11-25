@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ * Modified 2026-11-25 by Aurel: remember the simple/advanced mode.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "simpleview.h"
 
 
 void MainWindow::resetFmTxSettings()
@@ -85,6 +87,7 @@ void MainWindow::writeSettings(QSettings *writer, bool txOnly)
         writer->setValue("ontop", ui->checkBox_be_on_the_top->isChecked());
         writer->setValue("intray", ui->checkBox_sw_hideInTray->isChecked());
         writer->setValue("language", UsedLanguage);
+        writer->setValue("advanced_mode", simpleView->isAdvanced());
         writer->endGroup();
 
         writer->beginGroup("rdstime");
@@ -205,6 +208,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
         ui->checkBox_be_on_the_top->setChecked(reader->value("ontop", "false").toBool());
         ui->checkBox_sw_hideInTray->setChecked(reader->value("intray", "false").toBool());
         UsedLanguage = reader->value("language", "auto").toString();
+        simpleView->setAdvanced(reader->value("advanced_mode", "false").toBool());
         reader->endGroup();
 
         reader->beginGroup("rdstime");
