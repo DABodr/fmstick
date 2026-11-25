@@ -2123,10 +2123,6 @@ au maximum, c'est la déviation réglée dans l'onglet Émetteur ;
             <translation>Modulation</translation>
         </message>
         <message>
-            <source>Overmodulation: lower the volume of the source.</source>
-            <translation>Surmodulation : baissez le volume de la source.</translation>
-        </message>
-        <message>
             <source>RDS information</source>
             <translation>Informations RDS</translation>
         </message>
@@ -2257,6 +2253,20 @@ au maximum, c'est la déviation réglée dans l'onglet Émetteur ;
         <message>
             <source>More than 8 characters: receivers show the name in parts of 8.</source>
             <translation>Plus de 8 caractères : les récepteurs affichent le nom par morceaux de 8.</translation>
+        </message>
+        <message>
+            <source>Input level very high: lower the volume of the source.</source>
+            <translation>Niveau d'entrée très élevé : baissez le volume de la source.</translation>
+        </message>
+        <message>
+            <source>Sound processing</source>
+            <translation>Traitement du son</translation>
+        </message>
+        <message>
+            <source>Compressor and limiter built into the transmitter: they even out the volume
+and cap the peaks. Details in Advanced mode, Sound tab.</source>
+            <translation>Compresseur et limiteur intégrés à l'émetteur : ils régularisent le volume
+et écrêtent les pointes. Réglages détaillés : Mode avancé, onglet Son.</translation>
         </message>
     </context>
 </TS>
