@@ -168,7 +168,9 @@ void SimpleView::install()
     connect(ui->progressBar_audio_asq_measured, SIGNAL(valueChanged(int)), this, SLOT(inputLevelChanged(int)));
 
     /* state that has no signal (connection, USB volume, overmodulation flag) */
-    connect(&timer, SIGNAL(timeout()), this, SLOT(refresh()));
+    /* also catches RT/PS changes the app makes with signals blocked
+       (RadioText file, PS fields of the RDS tab) */
+    connect(&timer, SIGNAL(timeout()), this, SLOT(syncFromUi()));
     timer.start(1000);
 
     /* the window retranslates on language change */
