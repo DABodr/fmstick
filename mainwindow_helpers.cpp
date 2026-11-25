@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: the About box gives the right license (GPL v2).
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -356,7 +357,7 @@ void MainWindow::ShowAboutApp()
                             "info and help with testing.<br />\n"
                             "<br />\n"
                             "&copy; tipok.org.ua<br />\n"
-                            "License: GNU GPLv3<br />\n"
+                            "License: GNU GPLv2<br />\n"
                             "Commercial licenses avaliable too."
                             "</p></body></html>").arg(CurrentVersion));
 }
