@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: connections use qintptr, as QTcpServer does since Qt5.
 */
 
 #include "httpconnectionhandler.h"
@@ -49,7 +50,7 @@ void HttpConnectionHandler::run() {
 }
 
 
-void HttpConnectionHandler::handleConnection(int socketDescriptor) {
+void HttpConnectionHandler::handleConnection(qintptr socketDescriptor) {
     qDebug("HttpConnectionHandler (%p): handle new connection", this);
     busy = true;
     Q_ASSERT(socket.isOpen()==false); // if not, then the handler is already busy

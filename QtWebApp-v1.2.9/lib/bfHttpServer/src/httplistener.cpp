@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: connections use qintptr, as QTcpServer does since Qt5.
 */
 
 #include "httplistener.h"
@@ -13,6 +14,8 @@ HttpListener::HttpListener(QSettings* settings, HttpRequestHandler* requestHandl
 {
     Q_ASSERT(settings!=0);
     this->settings=settings;
+    // the descriptor reaches the handler thread through a queued signal
+    qRegisterMetaType<qintptr>("qintptr");
     // Start listening
     int port=settings->value("port").toInt();
     listen(QHostAddress::Any, port);
@@ -30,7 +33,7 @@ HttpListener::~HttpListener() {
 }
 
 
-void HttpListener::incomingConnection(int socketDescriptor) {
+void HttpListener::incomingConnection(qintptr socketDescriptor) {
 #ifdef SUPERVERBOSE
     qDebug("HttpListener: New connection");
 #endif
@@ -40,9 +43,9 @@ void HttpListener::incomingConnection(int socketDescriptor) {
     if (freeHandler) {
         // The descriptor is passed via signal/slot because the handler lives in another
         // thread and cannot open the socket when called by another thread.
-        connect(this,SIGNAL(handleConnection(int)),freeHandler,SLOT(handleConnection(int)));
+        connect(this,SIGNAL(handleConnection(qintptr)),freeHandler,SLOT(handleConnection(qintptr)));
         emit handleConnection(socketDescriptor);
-        disconnect(this,SIGNAL(handleConnection(int)),freeHandler,SLOT(handleConnection(int)));
+        disconnect(this,SIGNAL(handleConnection(qintptr)),freeHandler,SLOT(handleConnection(qintptr)));
     }
     else {
         // Reject the connection

@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: connections use qintptr, as QTcpServer does since Qt5.
 */
 
 #ifndef HTTPCONNECTIONHANDLER_H
@@ -79,7 +80,7 @@ public slots:
       Received from from the listener, when the handler shall start processing a new connection.
       @param socketDescriptor references the accepted connection.
     */
-    void handleConnection(int socketDescriptor);
+    void handleConnection(qintptr socketDescriptor);
 
 private slots:
 
