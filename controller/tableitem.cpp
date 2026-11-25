@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-25 by Aurel: port to Qt6.
+ */
 #include "tableitem.h"
 
 #include "requestmapper.h"
@@ -188,7 +192,7 @@ QByteArray TableItem::doHTMLParse(HttpRequest *request) {
 
     qDebug() << "set up object: " << obj->objectName() << ", value:" << value;
     bool result = ctrl->emitUpdateItem(obj, value);
-    result=TRUE;
+    result=true;
 
     if(result) {
         ret = QString("<p><b><font color=green>Action \"%1\" (%2) done, new param:\"%3\".</font></b></p>")

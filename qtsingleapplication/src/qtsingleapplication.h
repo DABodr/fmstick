@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Modified 2026-11-25 by Aurel: port to Qt6. (FmStick)
 ** All rights reserved.
 **
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -40,7 +41,7 @@
 #ifndef QTSINGLEAPPLICATION_H
 #define QTSINGLEAPPLICATION_H
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 class QtLocalPeer;
 
@@ -67,7 +68,6 @@ class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication
 public:
     QtSingleApplication(int &argc, char **argv, bool GUIenabled = true);
     QtSingleApplication(const QString &id, int &argc, char **argv);
-    QtSingleApplication(int &argc, char **argv, Type type);
 #if defined(Q_WS_X11)
     QtSingleApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
     QtSingleApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0);

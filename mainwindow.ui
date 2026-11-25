@@ -7278,9 +7278,6 @@ p, li { white-space: pre-wrap; }
    <property name="toolTip">
     <string>Toggle Skin mode</string>
    </property>
-   <property name="softKeyRole">
-    <enum>QAction::PositiveSoftKey</enum>
-   </property>
   </action>
   <action name="actionContext_Help">
    <property name="icon">

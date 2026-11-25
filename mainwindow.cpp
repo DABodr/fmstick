@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: port to Qt6.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +24,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <QtCore/QString>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QProgressBar>
 #include <QIcon>
+#include <QRegularExpression>
 
 #include "mainwindow.h"
 #include "querier.h"
@@ -62,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     nodeviceicon = QIcon(":/fmstick/images/Gnome-Network-Wireless-NoDevice-64.png");
 
     CurrentVersion = REVISION;
-    CurrentVersion.replace(QRegExp("^\\$Rev: (\\d+) \\$$"), "\\1");
+    CurrentVersion.replace(QRegularExpression("^\\$Rev: (\\d+) \\$$"), "\\1");
     CurrentVersion =  QString(VERSION) + "." + CurrentVersion;
 
     ui->setupUi(this);

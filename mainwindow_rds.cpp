@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-25 by Aurel: port to Qt6.
+ */
 
 #include "mainwindow.h"
 #include "querier.h"
@@ -541,7 +545,7 @@ int MainWindow::SetRDSRT(QString *text_in)
     QString text("");
     int ret=0;
 
-    text.append(text_in);
+    text.append(*text_in);
     while(text.length() > 0 && text.endsWith(" "))
         text.chop(1);
 

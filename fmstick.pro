@@ -1,13 +1,14 @@
 #-------------------------------------------------
 #
 # Project created by QtCreator 2011-10-05T01:35:53
+# Modified 2026-11-25 by Aurel: port to Qt6.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
 include(qtsingleapplication/src/qtsingleapplication.pri)
 include(QtWebApp-v1.2.9/lib/bfHttpServer/src/bfHttpServer.pri)
 
-QT       += core gui
+QT       += core gui widgets network
 
 TEMPLATE = app
 

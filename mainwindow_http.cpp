@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-25 by Aurel: port to Qt6.
+ */
 #include "mainwindow.h"
 #include "querier.h"
 #include "ui_mainwindow.h"
@@ -19,7 +23,7 @@ void MainWindow::updateHTTPListenerAccess()
 
 bool MainWindow::checkHTTPListenerPort()
 {
-    bool ret=FALSE;
+    bool ret=false;
     int port = ui->spinBox_sw_remote_port->value();
     QTcpServer *test_server = new QTcpServer();
     test_server->listen(QHostAddress::Any, port);
@@ -32,7 +36,7 @@ bool MainWindow::checkHTTPListenerPort()
         ui->spinBox_sw_remote_port->setStyleSheet("background-color: rgb(127,255,127);");
         qDebug("HttpListener: Listening on port %i",port);
         ui->textBrowser_sw_remote_uri->setHtml("<font color=red>this port is avaliable</font>");
-        ret=TRUE;
+        ret=true;
         //ui->label_check_conn->setText("");
     }
     test_server->close();
@@ -65,23 +69,14 @@ void MainWindow::updateHTTPListener()
 
             /* getting IP-address */
             QString IP_address = "127.0.0.1";
-            QNetworkConfigurationManager mgr;
-            QNetworkConfiguration nconfig = mgr.defaultConfiguration();
-            QNetworkSession session ( nconfig );
-            QNetworkInterface ninter = session.interface();
-            // the next statement gives you a funny name on windows
-            //qDebug() << ninter.name() << endl;
-            // this gives ip addresses in different sequence, but is is a static method anyhow
-            // (did not see in first place)
-            //qDebug() << ninter.allAddresses() << endl;
-
-            // this provides two ip addresses (1 ipv4 and 1 ipv6) at least on my machine
-            QList<QNetworkAddressEntry> laddr = ninter.addressEntries();
-            for ( QList<QNetworkAddressEntry> ::const_iterator it = laddr.begin(); it != laddr.end(); ++it )
+            // QNetworkSession was removed in Qt6: take the first non-loopback IPv4 address
+            const QList<QHostAddress> laddr = QNetworkInterface::allAddresses();
+            for (const QHostAddress &address : laddr)
             {
-                QHostAddress address = it->ip();
-                if(address.protocol() == QAbstractSocket::IPv4Protocol)
+                if(address.protocol() == QAbstractSocket::IPv4Protocol && !address.isLoopback()) {
                     IP_address = address.toString();
+                    break;
+                }
             }
 
 
@@ -109,12 +104,12 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QPlainTextEdit *item = (QPlainTextEdit *) obj;
         if(item->isReadOnly()){
             qDebug() << "[MAIN] trying to set read-only item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
         QTextDocument doc;
         doc.setHtml( QString(*value) );
@@ -124,12 +119,12 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QLineEdit *item = (QLineEdit *) obj;
         if(item->isReadOnly()){
             qDebug() << "[MAIN] trying to set read-only item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setText(QString(*value));
@@ -138,7 +133,7 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QCheckBox *item = (QCheckBox *) obj;
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setChecked(QString(*value) == "" ? false : true);
@@ -147,7 +142,7 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QRadioButton *item = (QRadioButton *) obj;
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setChecked(QString(*value) == "" ? false : true);
@@ -156,12 +151,12 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QSpinBox *item = (QSpinBox *) obj;
         if(item->isReadOnly()){
             qDebug() << "[MAIN] trying to set read-only item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setValue(QString(*value).toInt());
@@ -170,12 +165,12 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QDoubleSpinBox *item = (QDoubleSpinBox *) obj;
         if(item->isReadOnly()){
             qDebug() << "[MAIN] trying to set read-only item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setValue(QString(*value).toDouble());
@@ -184,7 +179,7 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QComboBox *item = (QComboBox *) obj;
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         item->setCurrentIndex(QString(*value).toInt());
@@ -193,7 +188,7 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QPushButton *item = (QPushButton *) obj;
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
         if(item->objectName() == "pushButton_sw_send_custom_rds")
             SetRDSCustomGroup(value);
@@ -204,7 +199,7 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
         QAction *item = (QAction *) obj;
         if(!item->isEnabled()){
             qDebug() << "[MAIN] trying to set disabled item " << objTypeName << " with name " << obj->objectName();
-            return FALSE;
+            return false;
         }
 
         /* save params for http access */
@@ -226,11 +221,11 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
     }
     else {
         qDebug() << "[MAIN] unimplemented method for " << objTypeName;
-        return FALSE;
+        return false;
     }
 
     qDebug() << "[MAIN] done";
-    return TRUE;
+    return true;
 }
 
 

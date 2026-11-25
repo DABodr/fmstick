@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: port to Qt6.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,10 +39,10 @@ Querier::Querier(QObject *parent) :
     last_power = 0;
     last_rfcap = 0;
     rdsRTFile = "";
-    rdsRTPlusContent1RegExp = QRegExp("", Qt::CaseSensitive, QRegExp::RegExp2);
-    rdsRTPlusContent2RegExp = QRegExp("", Qt::CaseSensitive, QRegExp::RegExp2);
-    rdsRTPlusContent3RegExp = QRegExp("", Qt::CaseSensitive, QRegExp::RegExp2);
-    rdsRTPlusContent4RegExp = QRegExp("", Qt::CaseSensitive, QRegExp::RegExp2);
+    rdsRTPlusContent1RegExp = QRegularExpression();
+    rdsRTPlusContent2RegExp = QRegularExpression();
+    rdsRTPlusContent3RegExp = QRegularExpression();
+    rdsRTPlusContent4RegExp = QRegularExpression();
     rdsRTPlusContent1Type = RTPLUS_ITEM_TITLE;//RTPLUS_DUMMY_CLASS;
     rdsRTPlusContent2Type = RTPLUS_ITEM_ARTIST;//RTPLUS_DUMMY_CLASS;
     rdsRTPlusContent3Type = RTPLUS_PHONE_STUDIO;//RTPLUS_DUMMY_CLASS;
@@ -54,27 +55,28 @@ Querier::Querier(QObject *parent) :
 }
 
 
-bool Querier::parse_rtplus_items(QString &rtPlusLine, QRegExp &rtPlusRegExp, int item_id, QList<int> &itemsList)
+bool Querier::parse_rtplus_items(QString &rtPlusLine, QRegularExpression &rtPlusRegExp, int item_id, QList<int> &itemsList)
 {
-    if(rtPlusRegExp.isEmpty())
-        return FALSE;
+    if(rtPlusRegExp.pattern().isEmpty() || !rtPlusRegExp.isValid())
+        return false;
 
-    //rtPlusRegExp.setMinimal(TRUE);
-    int pos = rtPlusRegExp.indexIn(rtPlusLine, 0);
-    if(pos < 0 || rtPlusRegExp.cap(1).length() < 1)
-        return FALSE;
+    QRegularExpressionMatch match = rtPlusRegExp.match(rtPlusLine);
+    int pos = match.capturedStart(0);
+    QString cap1 = match.captured(1);
+    if(!match.hasMatch() || cap1.length() < 1)
+        return false;
 
     qDebug() << "RT+ rds " << itemsList.size()/3 <<
                 " item_id:" << item_id <<
                 " regexp:" << rtPlusRegExp.pattern() <<
-                " pos:" << rtPlusLine.indexOf(rtPlusRegExp.cap(1), pos) <<
-                " len:" << rtPlusRegExp.cap(1).length() <<
-                " STR: " << rtPlusRegExp.cap(1);
+                " pos:" << rtPlusLine.indexOf(cap1, pos) <<
+                " len:" << cap1.length() <<
+                " STR: " << cap1;
 
     itemsList << item_id
-              << rtPlusLine.indexOf(rtPlusRegExp.cap(1), pos)
-              << rtPlusRegExp.cap(1).length() - 1;
-    return TRUE;
+              << rtPlusLine.indexOf(cap1, pos)
+              << cap1.length() - 1;
+    return true;
 }
 
 void Querier::CheckFrontendFlags()
