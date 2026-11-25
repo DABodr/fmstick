@@ -1,6 +1,7 @@
 /*
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
  */
 
 #include "mainwindow.h"
@@ -8,6 +9,7 @@
 #include "ui_mainwindow.h"
 
 #include "fmtx.h"
+#include "rdstext.h"
 #include "logging.h"
 
 /******************************************************************
@@ -450,7 +452,8 @@ int MainWindow::SetRDSPSMessage(int id)
         return FMTX_MODE_NONE;
     msg=GetRDSLineEditById(id);
     querier->HidAccessMutex.lock();
-    ret = fmtxRDSSetPsMessageById(id, (char *) msg->text().toStdString().c_str());
+    QByteArray ps = toRdsCharset(msg->text());
+    ret = fmtxRDSSetPsMessageById(id, ps.data());
     if(ret != FMTX_MODE_OK){
         qDebug() << "Can't set RDS PS Message";
         SetTransmitIcon(ICON_WARN);
@@ -553,7 +556,7 @@ int MainWindow::SetRDSRT(QString *text_in)
         //return FMTX_MODE_NONE;
     } else {
         querier->HidAccessMutex.lock();
-        ret = fmtxRDSSetRtMessage((char *) text.toStdString().c_str());
+        ret = fmtxRDSSetRtMessage(toRdsCharset(text).constData());
         if(ret != FMTX_MODE_OK){
             qDebug() << "Can't set RDS RT Message";
             SetTransmitIcon(ICON_WARN);

@@ -5,6 +5,7 @@
 # Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
 # Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
 # Modified 2026-11-25 by Aurel: French translation.
+# Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
@@ -80,6 +81,7 @@ HEADERS +=\
     bitstream.h \
     usbvolume.h \
     simpleview.h \
+    rdstext.h \
     requestmapper.h \
     controller/txcontroller.h \
     controller/rdscontroller.h \
