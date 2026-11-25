@@ -10,6 +10,10 @@
  Libusb Version - 8/13/2010
 
  Copyright 2009, All Rights Reserved.
+
+ Modified 2026-11-25 by Aurel (FmStick): read_thread() now waits until
+ libusb has really cancelled the input transfer before hid_close() frees
+ it (same fix as upstream hidapi).
  
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
@@ -97,6 +101,7 @@ struct hid_device_ {
 	pthread_cond_t condition;
 	pthread_barrier_t barrier; /* Ensures correct startup sequence */
 	int shutdown_thread;
+	int cancelled;
 	struct libusb_transfer *transfer;
 
 	/* List of received input reports. */
@@ -121,6 +126,7 @@ static hid_device *new_hid_device(void)
 	dev->serial_index = 0;
 	dev->blocking = 1;
 	dev->shutdown_thread = 0;
+	dev->cancelled = 0;
 	dev->transfer = NULL;
 	dev->input_reports = NULL;
 	
@@ -633,10 +639,12 @@ static void read_callback(struct libusb_transfer *transfer)
 	}
 	else if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
 		dev->shutdown_thread = 1;
+		dev->cancelled = 1;
 		return;
 	}
 	else if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE) {
 		dev->shutdown_thread = 1;
+		dev->cancelled = 1;
 		return;
 	}
 	else if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT) {
@@ -646,8 +654,12 @@ static void read_callback(struct libusb_transfer *transfer)
 		LOG("Unknown transfer code: %d\n", transfer->status);
 	}
 	
-	/* Re-submit the transfer object. */
-	libusb_submit_transfer(transfer);
+	/* Re-submit the transfer object. If that fails, the transfer is no
+	   longer owned by libusb and read_thread() must not wait for it. */
+	if (libusb_submit_transfer(transfer) != 0) {
+		dev->shutdown_thread = 1;
+		dev->cancelled = 1;
+	}
 }
 
 
@@ -690,12 +702,14 @@ static void *read_thread(void *param)
 		}
 	}
 	
-	/* Cancel any transfer that may be pending. This call will fail
-	   if no transfers are pending, but that's OK. */
-	if (libusb_cancel_transfer(dev->transfer) == 0) {
-		/* The transfer was cancelled, so wait for its completion. */
-		libusb_handle_events(NULL);
-	}
+	/* Cancel any transfer that may be pending (hid_close() may already
+	   have done so), then keep handling events until libusb has really
+	   given the transfer back: hid_close() frees it right after
+	   pthread_join(), and freeing an in-flight transfer corrupts libusb
+	   (crash in usbi_mutex_lock). Same fix as upstream hidapi. */
+	libusb_cancel_transfer(dev->transfer);
+	while (!dev->cancelled)
+		libusb_handle_events_completed(NULL, &dev->cancelled);
 
 	/* The dev->transfer->buffer and dev->transfer objects are cleaned up
 	   in hid_close(). They are not cleaned up here because this thread
