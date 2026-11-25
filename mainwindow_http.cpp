@@ -1,6 +1,7 @@
 /*
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: full web UI address, from a real network card.
  */
 #include "mainwindow.h"
 #include "querier.h"
@@ -68,23 +69,7 @@ void MainWindow::updateHTTPListener()
             listener=new HttpListener(web_cfg,req_mapper,this);
 
             /* getting IP-address */
-            QString IP_address = "127.0.0.1";
-            // QNetworkSession was removed in Qt6: take the first non-loopback IPv4 address
-            const QList<QHostAddress> laddr = QNetworkInterface::allAddresses();
-            for (const QHostAddress &address : laddr)
-            {
-                if(address.protocol() == QAbstractSocket::IPv4Protocol && !address.isLoopback()) {
-                    IP_address = address.toString();
-                    break;
-                }
-            }
-
-
-            ui->textBrowser_sw_remote_uri->setHtml(
-                        QString("Web-UI link: <a href=\"http://%1:%2/\" target=\"_blank\">http://%1:%2/</a>")
-                        .arg(IP_address)
-                        .arg(ui->spinBox_sw_remote_port->value())
-                        );
+            showHTTPListenerAddress();
             //ui->textBrowser_sw_remote_uri->setReadOnly();
             connect( req_mapper, SIGNAL(updateItem(QObject *, QString *)),
                      this, SLOT(updateItemFromHTTPListener(QObject *, QString *)) );
@@ -228,4 +213,39 @@ bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
     return true;
 }
 
+/* Shows the web UI address. Also called after a language change, which
+   resets the field to its default text. */
+void MainWindow::showHTTPListenerAddress()
+{
+    if (!listener)
+        return;
+    /* The address to show: an IPv4 address of a real Wi-Fi or Ethernet
+       card that is up, rather than a Docker bridge or a VPN. */
+    QString IP_address = "127.0.0.1";
+    int best = 0;
+    const QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
+        QNetworkInterface::InterfaceFlags f = iface.flags();
+        if (!(f & QNetworkInterface::IsUp) || !(f & QNetworkInterface::IsRunning) || (f & QNetworkInterface::IsLoopBack))
+            continue;
+        QString name = iface.name();
+        bool isVirtual = name.startsWith("docker") || name.startsWith("br-") || name.startsWith("veth")
+                || name.startsWith("virbr") || name.startsWith("tun") || name.startsWith("tailscale")
+                || name.startsWith("wg") || name.startsWith("zt");
+        bool isCard = iface.type() == QNetworkInterface::Wifi || iface.type() == QNetworkInterface::Ethernet;
+        int score = isVirtual ? 1 : isCard ? 3 : 2;
+        for (const QNetworkAddressEntry &entry : iface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && score > best) {
+                best = score;
+                IP_address = entry.ip().toString();
+            }
+        }
+    }
 
+    /* the field was 27 px high: a wrapped address lost its end */
+    QTextBrowser *uri = ui->textBrowser_sw_remote_uri;
+    uri->setMaximumHeight(QWIDGETSIZE_MAX);
+    uri->setFixedHeight(uri->fontMetrics().lineSpacing() * 2 + 14);
+    QString url = QString("http://%1:%2/").arg(IP_address).arg(ui->spinBox_sw_remote_port->value());
+    uri->setHtml(tr("Address: %1").arg(QString("<a href=\"%1\">%1</a>").arg(url)));
+}

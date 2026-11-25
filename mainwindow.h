@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
+ * Modified 2026-11-25 by Aurel: web UI address.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -213,6 +214,7 @@ public slots:
     void updateHTTPListener();
     void updateHTTPListenerAccess();
     bool updateItemFromHTTPListener(QObject *obj, QString *value);
+    void showHTTPListenerAddress();
     bool openBrowser(const QString& rUrl, QWidget* parent=NULL);
 
 protected:

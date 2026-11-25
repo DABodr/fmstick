@@ -2059,6 +2059,10 @@ au maximum, c'est la déviation réglée dans l'onglet Émetteur ;
             <source>USB volume below maximum: the audio deviation is reduced.</source>
             <translation>Volume USB sous le maximum : la déviation audio est réduite.</translation>
         </message>
+        <message>
+            <source>Address: %1</source>
+            <translation>Adresse : %1</translation>
+        </message>
     </context>
     <context>
         <name>SimpleView</name>
