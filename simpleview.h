@@ -60,6 +60,11 @@ public:
     /* The device was (re)read or its config saved to EEPROM. */
     void markClean();
 
+    /* Web UI: the screen's state as JSON (any thread), and a change to
+       apply (GUI thread only: the web server queues it here). */
+    static QByteArray webState();
+    void webSet(const QString &field, const QString &value);
+
 public slots:
     void refresh();
     void syncFromUi();

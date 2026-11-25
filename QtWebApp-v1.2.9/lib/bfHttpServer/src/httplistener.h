@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: connections use qintptr, as QTcpServer does since Qt5.
 */
 
 #ifndef LISTENER_H
@@ -53,7 +54,7 @@ public:
 protected:
 
     /** Serves new incoming connection requests */
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor) override;
 
 private:
 
@@ -69,7 +70,7 @@ signals:
       Emitted when the connection handler shall process a new incoming onnection.
       @param socketDescriptor references the accepted connection.
     */
-    void handleConnection(int socketDescriptor);
+    void handleConnection(qintptr socketDescriptor);
 
 };
 

@@ -16,7 +16,14 @@
 #include "usbvolume.h"
 
 #include <QtWidgets>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <cmath>
+
+/* last state published for the web UI, read by the HTTP handler threads */
+static QMutex webStateMutex;
+static QByteArray webStateJson = "{}";
 
 /* Power presets, dBµV (the Si4711 accepts 88..120). */
 static const int POWER_PRESETS[3] = { 88, 104, 120 };
@@ -602,6 +609,44 @@ void SimpleView::refresh()
     levelWarning->setVisible(onAirNow && inputLevel > -3);
 
     /* footer */
+    /* the same state for the web UI */
+    static const char *stateNames[] = { "unplugged", "stopped", "silent", "onair" };
+    auto comboItems = [](QComboBox *combo) {
+        QJsonArray items;
+        for (int i = 0; i < combo->count(); i++)
+            items.append(combo->itemText(i));
+        return items;
+    };
+    QJsonObject web;
+    web["state"] = stateNames[state];
+    web["status"] = pill;
+    web["device"] = deviceLabel->text();
+    web["banner"] = QJsonObject{ { "text", text }, { "action", action }, { "error", error } };
+    web["freq"] = ui->doubleSpinBox_transmitter_freq->value();
+    web["freqMin"] = freq->minimum();
+    web["freqMax"] = freq->maximum();
+    web["power"] = ui->spinBox_transmitter_power->value();
+    web["powerPresets"] = QJsonArray{ POWER_PRESETS[0], POWER_PRESETS[1], POWER_PRESETS[2] };
+    web["powerLabels"] = QJsonArray{ powerButtons[0]->text(), powerButtons[1]->text(), powerButtons[2]->text() };
+    web["powerDetail"] = powerDetail->text();
+    web["onAir"] = onAir;
+    web["txLabel"] = txButton->text();
+    web["inputLevel"] = state == Disconnected ? QJsonValue() : QJsonValue(inputLevel);
+    web["levelWarning"] = onAirNow && inputLevel > -3 ? levelWarning->text() : QString();
+    web["modulation"] = QJsonObject{ { "percent", qBound(0, percent, 100) }, { "text", modText }, { "color", modColor }, { "textColor", modTextColor } };
+    web["dsp"] = QJsonObject{ { "index", ui->comboBox_audioPreset->currentIndex() }, { "items", comboItems(ui->comboBox_audioPreset) } };
+    web["pty"] = QJsonObject{ { "index", ui->comboBox_rds_pty->currentIndex() }, { "items", comboItems(ui->comboBox_rds_pty) } };
+    web["ps"] = ui->lineEdit_station_id->text();
+    QString rtNow = ui->plainTextEdit_rds_rt->toPlainText();
+    while (rtNow.endsWith(' '))
+        rtNow.chop(1);
+    web["rt"] = rtNow;
+    web["dirty"] = dirty;
+    {
+        QMutexLocker lock(&webStateMutex);
+        webStateJson = QJsonDocument(web).toJson(QJsonDocument::Compact);
+    }
+
     footerText->setText(dirty ? tr("Changes applied live, not yet kept for the next startup")
                               : tr("No change since the transmitter was read"));
     restyle(footerDot, QString("QLabel { border-radius: 5px; background: %1; }").arg(dirty ? "#B45309" : "#16A34A"));
@@ -726,6 +771,58 @@ void SimpleView::dspPicked(int index)
         return;
     mw->applyLive([&]() { ui->comboBox_audioPreset->setCurrentIndex(index); });
     markDirty();
+}
+
+QByteArray SimpleView::webState()
+{
+    QMutexLocker lock(&webStateMutex);
+    return webStateJson;
+}
+
+void SimpleView::webSet(const QString &field, const QString &value)
+{
+    if (!mw->deviceStatus && field != "fix")
+        return;
+    if (field == "freq") {
+        bool ok;
+        double v = value.toDouble(&ok);
+        if (ok)
+            freq->setValue(v);              /* retunes through freqEdited() */
+    } else if (field == "freqStep") {
+        freqStep(value.toInt() < 0 ? -1 : 1);
+    } else if (field == "power") {
+        int v = value.toInt();
+        if (v >= 88 && v <= 120) {
+            mw->applyLive([&]() { ui->spinBox_transmitter_power->setValue(v); });
+            markDirty();
+        }
+    } else if (field == "tx") {
+        bool on = ui->checkBox_transmitter_enabled->isChecked();
+        if ((value == "on") != on)
+            toggleTransmission();
+    } else if (field == "ps") {
+        psEdit->setText(value);
+        psEdited(value);
+    } else if (field == "rt") {
+        rtEdit->setText(value.left(64));
+        rtEdited();
+    } else if (field == "pty") {
+        int i = value.toInt();
+        if (i >= 0 && i < ptyCombo->count()) {
+            ptyCombo->setCurrentIndex(i);
+            ptyPicked(i);
+        }
+    } else if (field == "dsp") {
+        int i = value.toInt();
+        if (i >= 0 && i < dspCombo->count())
+            dspPicked(i);
+    } else if (field == "fix") {
+        bannerAction();
+    } else if (field == "save") {
+        if (mw->writeEEPROMConfig())
+            markClean();
+    }
+    syncFromUi();
 }
 
 void SimpleView::bannerAction()

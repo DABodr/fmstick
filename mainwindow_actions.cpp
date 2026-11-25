@@ -1,6 +1,7 @@
 /*
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
+ * Modified 2026-11-25 by Aurel: web UI address shown again after a language change.
  */
 #include "mainwindow.h"
 #include "querier.h"
@@ -31,6 +32,7 @@ void MainWindow::retranslateUi()
 
     ui->retranslateUi(this);
     retranslateUsbVolumeUi();
+    showHTTPListenerAddress();
 
     ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
     ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
