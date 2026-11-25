@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,6 +196,10 @@ public slots:
     /* digital audio hack (needed after fmtx changed)*/
     bool SetDigitalAudioHack();
 
+    /* USB audio volume (scales the audio deviation on Vast HiFi-FMT) */
+    void refreshUsbVolume();
+    void SetUsbVolume(int iVal);
+
     /* software events */
     bool checkHTTPListenerPort();
     void updateHTTPListener();
@@ -244,6 +249,18 @@ private:
     void writeSettings(QSettings *writer, bool txOnly);
     void setupTrayIcon();
     void toggleRDSPSVisibility(int value);
+
+    /* USB audio volume: see usbvolume.h */
+    QGroupBox *usbVolGroup;
+    QSlider   *usbVolSlider;
+    QLabel    *usbVolValueLabel;
+    QLabel    *usbVolDeviationLabel;
+    QLabel    *usbVolWarningLabel;
+    QCheckBox *usbVolMaxOnConnect;
+    QTimer     usbVolTimer;
+    void setupUsbVolumeUi();
+    bool usbVolumeToMaxIfNeeded();
+    uint32_t audioDeviationFromDevice(uint32_t readHz);
 };
 
 #endif // MAINWINDOW_H

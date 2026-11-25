@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     CurrentVersion =  QString(VERSION) + "." + CurrentVersion;
 
     ui->setupUi(this);
+    setupUsbVolumeUi();
 
     ui->lineEdit_sw_ver->setText(CurrentVersion);
     ui->checkBox_sw_runAtStartup->setChecked(GetRunAtStartup());
@@ -516,6 +518,13 @@ void MainWindow::RedrawEverything(bool bFound)
         //hack for digital audio
         if(! SetDigitalAudioHack())
                 goto redraw_err;
+    }
+
+    /* A USB volume of 0 silences Vast HiFi-FMT devices (see usbvolume.h) */
+    if(usbVolumeToMaxIfNeeded()) {
+        status->showMessage(tr("Setting USB volume to maximum..."), 10000);
+        status->show();
+        QThread::msleep(1000);  /* the firmware applies the volume gradually */
     }
 
     status->showMessage(tr("Reading running config..."), 10000);

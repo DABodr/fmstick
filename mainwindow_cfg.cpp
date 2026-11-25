@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,6 +103,7 @@ void MainWindow::writeSettings(QSettings *writer, bool txOnly)
         writer->endGroup();
 
         writer->beginGroup("hardware");
+        writer->setValue("usb_volume_max_on_connect", usbVolMaxOnConnect->isChecked());
         writer->endGroup();
     }
 
@@ -222,6 +224,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
         reader->endGroup();
 
         reader->beginGroup("hardware");
+        usbVolMaxOnConnect->setChecked(reader->value("usb_volume_max_on_connect", "true").toBool());
         reader->endGroup();
     }
 
