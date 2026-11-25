@@ -3,6 +3,7 @@
   @author Stefan Frings
   Modified 2026-11-25 by Aurel: port to Qt6.
   Modified 2026-11-25 by Aurel: stricter check of the auth header.
+  Modified 2026-11-25 by Aurel: new web UI and JSON API.
 */
 
 #include "requestmapper.h"
@@ -17,6 +18,9 @@
 #include "controller/softwarecontroller.h"
 
 #include "ui_mainwindow.h"
+#include "simpleview.h"
+#include <QFile>
+#include <QMetaObject>
 #include "mainwindow.h"
 
 RequestMapper::RequestMapper(QObject* parent)
@@ -302,6 +306,20 @@ void RequestMapper::mainPageStaff(HttpRequest& request, HttpResponse& response)
 }
 
 
+/* A file of the app's resources (the web UI page), never cached. */
+static void serveResource(HttpResponse& response, const QString& file, const QByteArray& type)
+{
+    QFile f(file);
+    if (!f.open(QIODevice::ReadOnly)) {
+        response.setStatus(404, "Not found");
+        response.write("404 Not found", true);
+        return;
+    }
+    response.setHeader("Content-Type", type);
+    response.setHeader("Cache-Control", "no-cache");
+    response.write(f.readAll(), true);
+}
+
 void RequestMapper::service(HttpRequest& request, HttpResponse& response) {
     MainWindow *mw = (MainWindow *) mw_ptr;
 
@@ -323,7 +341,37 @@ void RequestMapper::service(HttpRequest& request, HttpResponse& response) {
     }
 
 
-    if(path.length() <= 1) {
+    /* the web UI: one page, the simple screen's state as JSON, and changes */
+    if(path.length() <= 1 || path == "/index.html") {
+        serveResource(response, ":/fmstick/html/app.html", "text/html; charset=UTF-8");
+        return;
+    }
+    else if (path == "/api/state") {
+        response.setHeader("Content-Type", "application/json; charset=UTF-8");
+        response.setHeader("Cache-Control", "no-store");
+        response.write(SimpleView::webState(), true);
+        return;
+    }
+    else if (path == "/api/set") {
+        /* POST with a custom header: a page of another site cannot send it
+           without a CORS preflight, so it cannot drive the transmitter
+           with the browser's saved credentials */
+        if (request.getMethod() != "POST" || request.getHeader("X-FmStick") != "1") {
+            response.setStatus(403, "Forbidden");
+            response.write("403 Forbidden", true);
+            return;
+        }
+        QString field = QString::fromUtf8(request.getParameter("field"));
+        QString value = QString::fromUtf8(request.getParameter("value"));
+        SimpleView *view = mw->simple();
+        /* widgets live in the GUI thread: queue the change there */
+        QMetaObject::invokeMethod(view, [view, field, value]() { view->webSet(field, value); },
+                                  Qt::QueuedConnection);
+        response.setHeader("Content-Type", "application/json; charset=UTF-8");
+        response.write("{\"ok\":true}", true);
+        return;
+    }
+    else if (path == "/classic") {
         mainPageStaff(request, response);
         return;
     }

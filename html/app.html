@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+  FmStick web UI: the simple screen of the application, for a phone or
+  another computer. Copyright (C) 2026 Aurel. GPL v2 or later, see
+  LICENSE.txt.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>FmStick</title>
+<link rel="icon" href="/images/fmstick.png">
+<link rel="stylesheet" href="/html/app.css">
+<script src="/html/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img src="/images/fmstick.png" alt="" width="32" height="32">
+    <div>
+      <div class="app-name">FmStick</div>
+      <div class="device" id="device">…</div>
+    </div>
+  </div>
+  <span class="pill" id="pill" data-state="unknown"><span class="dot" aria-hidden="true"></span><span id="pill-text">…</span></span>
+</header>
+
+<div class="banner" id="banner" role="alert" hidden>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  <span id="banner-text"></span>
+  <button type="button" id="banner-action" hidden></button>
+</div>
+
+<main id="main">
+  <div class="col">
+    <section class="card">
+      <h2 data-i18n="frequency">Fréquence</h2>
+      <div class="freq">
+        <button type="button" class="round" id="freq-down" data-i18n-label="freqDown">−</button>
+        <label class="freq-value">
+          <span class="sr-only" data-i18n="freqLabel">Fréquence en MHz</span>
+          <input id="freq" type="number" inputmode="decimal" step="0.05" min="76" max="108">
+          <span class="unit">MHz</span>
+        </label>
+        <button type="button" class="round" id="freq-up" data-i18n-label="freqUp">+</button>
+      </div>
+      <p class="hint" data-i18n="freqTip">Choisissez une fréquence où votre radio ne capte que du souffle, loin des stations locales.</p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2 data-i18n="power">Puissance d'émission</h2>
+        <span class="muted" id="power-detail"></span>
+      </div>
+      <div class="seg" role="radiogroup" data-i18n-label="power" id="power"></div>
+      <p class="hint" data-i18n="powerNote">À forte puissance, vérifiez ce que la réglementation de votre pays autorise.</p>
+    </section>
+
+    <button type="button" class="tx" id="tx" data-on="false">…</button>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <h2 data-i18n="sound">Son</h2>
+      <div class="meter-row"><span data-i18n="inputLevel">Niveau d'entrée</span><span id="level-text">—</span></div>
+      <div class="meter"><div id="level-bar"></div></div>
+      <div class="meter-row"><span data-i18n="modulation">Modulation</span><strong id="mod-text">—</strong></div>
+      <div class="meter"><div id="mod-bar"></div></div>
+      <p class="warn" id="level-warning" hidden></p>
+      <label class="field">
+        <span data-i18n="dsp">Traitement du son</span>
+        <select id="dsp"></select>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="rds">Informations RDS</h2>
+      <label class="field">
+        <span class="field-head"><span data-i18n="ps">Nom de la station</span><span class="muted" id="ps-count"></span></span>
+        <input id="ps" type="text" autocomplete="off" spellcheck="false">
+        <span class="hint" id="ps-hint" data-i18n="psHint" hidden>Plus de 8 caractères : les récepteurs affichent le nom par morceaux de 8.</span>
+      </label>
+      <label class="field">
+        <span class="field-head"><span data-i18n="rt">Texte défilant</span><span class="muted" id="rt-count"></span></span>
+        <input id="rt" type="text" maxlength="64" autocomplete="off">
+      </label>
+      <label class="field">
+        <span data-i18n="pty">Type de programme</span>
+        <select id="pty"></select>
+      </label>
+    </section>
+  </div>
+</main>
+
+<footer class="bottom">
+  <span class="save-state"><span class="dot" id="save-dot" aria-hidden="true"></span><span id="save-text"></span></span>
+  <button type="button" class="primary" id="save" data-i18n="save">Garder au démarrage</button>
+</footer>
+<p class="links"><a href="/classic" data-i18n="classic">Interface avancée</a></p>
+</body>
+</html>

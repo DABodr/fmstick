@@ -66,6 +66,9 @@
         <file>images/web-browser.png</file>
         <file>images/fmstick.ico</file>
         <file>html/index.html</file>
+        <file>html/app.html</file>
+        <file>html/app.css</file>
+        <file>html/app.js</file>
         <file>html/style.css</file>
         <file>html/index.js</file>
         <file>html/grayscale.svg</file>

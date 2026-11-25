@@ -8,6 +8,7 @@
  * Modified 2026-11-25 by Aurel: the About box gives the right license (GPL v2).
  * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
+ * Modified 2026-11-25 by Aurel: EEPROM write without dialogs, for the web UI.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -479,6 +480,21 @@ bool MainWindow::SaveEEPROMParams()
         return false;
     }
 
+    if(!writeEEPROMConfig()) {
+        QMessageBox::warning(this, tr("Can't write EEPROM"), tr("Error while writing EEPROM Config!"));
+        return false;
+    }
+
+    QMessageBox::information(this, tr("Write successed"), tr("EEPROM Config written successfuly!\n"
+                                                             "You may restart device to run\n"
+                                                             "configuration from EEPROM."));
+    return true;
+}
+
+/* Writes the current configuration to the EEPROM, without any dialog. */
+bool MainWindow::writeEEPROMConfig()
+{
+    int ret;
     bool is_ready_save = querier->is_ready;
     bool liveEditingEnabled_save = liveEditingEnabled;
     querier->is_ready=false;
@@ -493,14 +509,9 @@ bool MainWindow::SaveEEPROMParams()
 
     if(ret != FMTX_MODE_OK){
         qDebug() << __FUNCTION__ << " write error!";
-        QMessageBox::warning(this, tr("Can't write EEPROM"), tr("Error while writing EEPROM Config!"));
         return false;
     }
-
     qDebug() << __FUNCTION__ << "saved!";
-    QMessageBox::information(this, tr("Write successed"), tr("EEPROM Config written successfuly!\n"
-                                                             "You may restart device to run\n"
-                                                             "configuration from EEPROM."));
     return true;
 }
 

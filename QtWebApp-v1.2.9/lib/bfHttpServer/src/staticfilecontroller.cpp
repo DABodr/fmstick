@@ -1,6 +1,7 @@
 /**
   @file
   @author Stefan Frings
+  Modified 2026-11-25 by Aurel: content types for .js and .svg.
 */
 
 #include "staticfilecontroller.h"
@@ -118,6 +119,12 @@ void StaticFileController::setContentType(QString fileName, HttpResponse& respon
     }
     else if (fileName.endsWith(".txt")) {
         response.setHeader("Content-Type", qPrintable("text/plain; charset="+encoding));
+    }
+    else if (fileName.endsWith(".js")) {
+        response.setHeader("Content-Type", qPrintable("application/javascript; charset="+encoding));
+    }
+    else if (fileName.endsWith(".svg")) {
+        response.setHeader("Content-Type", "image/svg+xml");
     }
     else if (fileName.endsWith(".css")) {
         response.setHeader("Content-Type", qPrintable("text/css; charset="+encoding));
