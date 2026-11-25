@@ -2,6 +2,7 @@
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: full web UI address, from a real network card.
+ * Modified 2026-11-25 by Aurel: web UI changes applied live.
  */
 #include "mainwindow.h"
 #include "querier.h"
@@ -79,10 +80,21 @@ void MainWindow::updateHTTPListener()
     }
 }
 
+/* Changes from the web UI reach the device even when the "Live editing"
+   option is off, like the simple screen's. The value was allocated by the
+   request handler for us: free it here. */
 bool MainWindow::updateItemFromHTTPListener(QObject *obj, QString *value)
 {
+    QString empty;
+    bool ret = false;
+    applyLive([&]() { ret = applyItemFromHTTPListener(obj, value ? value : &empty); });
+    delete value;
+    return ret;
+}
+
+bool MainWindow::applyItemFromHTTPListener(QObject *obj, QString *value)
+{
     QString objTypeName = obj->metaObject()->className();
-    if(!value) value = new QString("");
     qDebug() << "[MAIN] object class name:"  << objTypeName << ", name: " << obj->objectName() << "value:" << *value;
 
     if(objTypeName == "QPlainTextEdit") {

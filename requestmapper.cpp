@@ -2,6 +2,7 @@
   @file
   @author Stefan Frings
   Modified 2026-11-25 by Aurel: port to Qt6.
+  Modified 2026-11-25 by Aurel: stricter check of the auth header.
 */
 
 #include "requestmapper.h"
@@ -312,7 +313,7 @@ void RequestMapper::service(HttpRequest& request, HttpResponse& response) {
     auth_list = auth.split(' ');
     QString our_auth = QString("%1:%2").arg(mw->ui->lineEdit_sw_remote_login->text()).arg(mw->ui->lineEdit_sw_remote_pwd->text());
 
-    if(!auth_list.count() || auth_list.at(0) != "Basic" || auth_list.at(1) != our_auth.toLatin1().toBase64()) {
+    if(auth_list.count() < 2 || auth_list.at(0) != "Basic" || auth_list.at(1) != our_auth.toLatin1().toBase64()) {
         response.setStatus(401, "Not Authorized");
         response.setHeader("WWW-Authenticate", QString("Basic realm=\"%1-%2\"").arg("FmStick").arg(mw->CurrentVersion).toLatin1());
         response.write("401 You - a stranger!",true);
