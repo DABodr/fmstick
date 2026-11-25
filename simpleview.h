@@ -79,6 +79,7 @@ private slots:
     void bannerAction();
     void saveToEeprom();
     void inputLevelChanged(int dB);
+    void dspPicked(int index);
 
 private:
     enum State { Disconnected, Stopped, Silent, OnAir };
@@ -104,7 +105,11 @@ private:
     QButtonGroup *powerGroup;
     QPushButton *powerButtons[3];
     QPushButton *txButton;
-    QLabel *soundTitle, *levelTitle, *levelValue, *modTitle, *modValue, *overmodLabel;
+    QLabel *soundTitle, *levelTitle, *levelValue, *modTitle, *modValue, *levelWarning;
+    QLabel *dspLabel;
+    QComboBox *dspCombo;
+    int inputLevel;
+    bool onAirNow;
     QProgressBar *levelBar, *modBar;
     QLabel *rdsTitle, *psLabel, *psCount, *psHint, *rtLabel, *rtCount, *rtHint, *ptyLabel;
     QLineEdit *psEdit, *rtEdit;

@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 #include "querier.h"
 #include "mainwindow.h"
 #include "fmtx.h"
+#include "rdstext.h"
 #include "logging.h"
 
 Querier::Querier(QObject *parent) :
@@ -170,7 +172,7 @@ void Querier::CheckFrontendFlags()
                 //QMessageBox::about ( NULL, tr("About FmStick"), rdsLine);
                 logwrite(LOG_INFO, "RadioText: \"%s\"", rdsLine.toStdString().c_str());
                 HidAccessMutex.lock();
-                ret = fmtxRDSSetRtMessage(rdsLine.toStdString().c_str());
+                ret = fmtxRDSSetRtMessage(toRdsCharset(rdsLine).constData());
                 HidAccessMutex.unlock();
                 if(ret != FMTX_MODE_OK){
                     qDebug() << "Can't set RDS RT Message";

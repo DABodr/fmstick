@@ -134,6 +134,7 @@ static void restyle(QWidget *w, const QString &css)
 
 SimpleView::SimpleView(MainWindow *mw, Ui::MainWindow *ui)
     : QObject(mw), mw(mw), ui(ui), advanced(false), mini(false), dirty(false),
+      inputLevel(-70), onAirNow(false),
       bannerFix(FixNone), usbVolumeMax(0)
 {
 }
@@ -166,9 +167,12 @@ void SimpleView::install()
     connect(ui->comboBox_rds_pty, SIGNAL(currentIndexChanged(int)), this, SLOT(syncFromUi()));
     connect(ui->spinBox_transmitter_audioDev, SIGNAL(valueChanged(int)), this, SLOT(refresh()));
     connect(ui->progressBar_audio_asq_measured, SIGNAL(valueChanged(int)), this, SLOT(inputLevelChanged(int)));
+    connect(ui->comboBox_audioPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(syncFromUi()));
 
-    /* state that has no signal (connection, USB volume, overmodulation flag) */
-    connect(&timer, SIGNAL(timeout()), this, SLOT(refresh()));
+    /* state that has no signal (connection, USB volume) */
+    /* also catches RT/PS changes the app makes with signals blocked
+       (RadioText file, PS fields of the RDS tab) */
+    connect(&timer, SIGNAL(timeout()), this, SLOT(syncFromUi()));
     timer.start(1000);
 
     /* the window retranslates on language change */
@@ -342,10 +346,22 @@ void SimpleView::buildBody()
     modBar->setRange(0, 100);
     modBar->setTextVisible(false);
     c->addWidget(modBar);
-    overmodLabel = new QLabel();
-    overmodLabel->setStyleSheet("color: #B91C1C; font-weight: 600;");
-    overmodLabel->hide();
-    c->addWidget(overmodLabel);
+    /* Not the chip's overmodulation flag: the transmitter's firmware latches
+       it after the first event, so it stays set even at -42 dBFS. The
+       measured input level is live, so warn from it instead. */
+    levelWarning = new QLabel();
+    levelWarning->setWordWrap(true);
+    levelWarning->setStyleSheet("color: #B91C1C; font-weight: 600;");
+    levelWarning->hide();
+    c->addWidget(levelWarning);
+    /* the compressor/limiter presets of the Sound tab, same list */
+    dspLabel = new QLabel();
+    c->addWidget(dspLabel);
+    dspCombo = new QComboBox();
+    dspCombo->setModel(ui->comboBox_audioPreset->model());
+    dspLabel->setBuddy(dspCombo);
+    c->addWidget(dspCombo);
+    connect(dspCombo, SIGNAL(activated(int)), this, SLOT(dspPicked(int)));
     right->addWidget(soundCard);
 
     /* RDS */
@@ -431,7 +447,10 @@ void SimpleView::retranslate()
     soundTitle->setText(tr("Sound"));
     levelTitle->setText(tr("Input level"));
     modTitle->setText(tr("Modulation"));
-    overmodLabel->setText(tr("Overmodulation: lower the volume of the source."));
+    levelWarning->setText(tr("Input level very high: lower the volume of the source."));
+    dspLabel->setText(tr("Sound processing"));
+    dspCombo->setToolTip(tr("Compressor and limiter built into the transmitter: they even out the volume\n"
+                            "and cap the peaks. Details in Advanced mode, Sound tab."));
     rdsTitle->setText(tr("RDS information"));
     psLabel->setText(tr("Station name"));
     rtLabel->setText(tr("Radio text"));
@@ -579,7 +598,8 @@ void SimpleView::refresh()
     else
         modBar->setToolTip(QString());
 
-    overmodLabel->setVisible(state == OnAir && ui->label_audio_overmodulated->isEnabled());
+    onAirNow = state == OnAir;
+    levelWarning->setVisible(onAirNow && inputLevel > -3);
 
     /* footer */
     footerText->setText(dirty ? tr("Changes applied live, not yet kept for the next startup")
@@ -590,6 +610,8 @@ void SimpleView::refresh()
 void SimpleView::inputLevelChanged(int dB)
 {
     /* the advanced meter goes from -70 to 0 dB */
+    inputLevel = dB;
+    levelWarning->setVisible(onAirNow && dB > -3);
     levelBar->setValue(qBound(0, dB + 70, 70));
     levelValue->setText(mw->deviceStatus ? QString("%1 dB").arg(dB) : QString::fromUtf8("—"));
     const char *color = dB > -3 ? "#DC2626" : dB > -10 ? "#EAB308" : "#16A34A";
@@ -625,6 +647,9 @@ void SimpleView::syncFromUi()
     if (!rtEdit->hasFocus() && rtEdit->text() != rt)
         rtEdit->setText(rt);
     rtCount->setText(QString("%1 / 64").arg(rtEdit->text().length()));
+
+    if (dspCombo->currentIndex() != ui->comboBox_audioPreset->currentIndex())
+        dspCombo->setCurrentIndex(ui->comboBox_audioPreset->currentIndex());
 
     if (ptyCombo->currentIndex() != ui->comboBox_rds_pty->currentIndex())
         ptyCombo->setCurrentIndex(ui->comboBox_rds_pty->currentIndex());
@@ -692,6 +717,14 @@ void SimpleView::rtEdited()
 void SimpleView::ptyPicked(int index)
 {
     mw->applyLive([&]() { ui->comboBox_rds_pty->setCurrentIndex(index); });
+    markDirty();
+}
+
+void SimpleView::dspPicked(int index)
+{
+    if (index == ui->comboBox_audioPreset->currentIndex())
+        return;
+    mw->applyLive([&]() { ui->comboBox_audioPreset->setCurrentIndex(index); });
     markDirty();
 }
 
