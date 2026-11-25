@@ -5,6 +5,8 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
+ * Modified 2026-11-25 by Aurel: find translations next to the binary too.
+ * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +30,14 @@
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QtNetwork>
+#include <functional>
 
 #include <commanddefs.h>
 #include <propertydefs.h>
 #include "querier.h"
 #include "httplistener.h"
+
+class SimpleView;
 
 namespace Ui {
     class MainWindow;
@@ -76,6 +81,9 @@ public:
     void DisplayRDSEditor(void);
     void ConfigureRDSEditor(void);
     void DisplayFirmwareInfo(void);
+    /* Runs a change made in the simple screen with live editing on, so it
+       reaches the device whatever the "Live editing" option says. */
+    void applyLive(const std::function<void()> &change);
 
     ~MainWindow();
 
@@ -191,7 +199,7 @@ public slots:
     void SaveFrontendParams();
     void ReadFrontendParams();
     /* EEPROM manipulations */
-    void SaveEEPROMParams();
+    bool SaveEEPROMParams();
     void ShowEEPROMParams();
     /* digital audio hack (needed after fmtx changed)*/
     bool SetDigitalAudioHack();
@@ -244,6 +252,7 @@ private:
 
     QDir directoryOf(const QString &subdir);
     void createLanguageMenu();
+    QDir translationsDir();
     void retranslateUi();
     void readSettings(QSettings *reader, bool txOnly);
     void writeSettings(QSettings *writer, bool txOnly);
@@ -258,6 +267,10 @@ private:
     QLabel    *usbVolWarningLabel;
     QCheckBox *usbVolMaxOnConnect;
     QTimer     usbVolTimer;
+
+    /* simple main screen, see simpleview.h */
+    SimpleView *simpleView;
+    void retranslateUsbVolumeUi();
     void setupUsbVolumeUi();
     bool usbVolumeToMaxIfNeeded();
     uint32_t audioDeviationFromDevice(uint32_t readHz);

@@ -5,6 +5,7 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: Fusion style.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
  */
 
 #include <QApplication>
+#include <QStyleFactory>
 #include "mainwindow.h"
 #if 1
 #include <QtSingleApplication>
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("FmStick");
     QCoreApplication::setApplicationVersion("1.2");
 
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
     MainWindow w;
 
     QObject::connect(&a, SIGNAL(messageReceived(const QString&)),

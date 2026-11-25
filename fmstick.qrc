@@ -1,6 +1,9 @@
 <RCC>
     <qresource prefix="/fmstick">
         <file>images/fmstick.png</file>
+        <file>images/ui-check.svg</file>
+        <file>images/ui-chevron-down.svg</file>
+        <file>images/ui-chevron-up.svg</file>
         <file>images/help.png</file>
         <file>images/save.png</file>
         <file>images/open.png</file>

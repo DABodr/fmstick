@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
+ */
 #include "mainwindow.h"
 #include "querier.h"
 #include "ui_mainwindow.h"
@@ -26,6 +30,7 @@ void MainWindow::retranslateUi()
     backup11 = ui->comboBox_audio_input_mute->currentIndex();
 
     ui->retranslateUi(this);
+    retranslateUsbVolumeUi();
 
     ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
     ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
@@ -42,6 +47,15 @@ void MainWindow::retranslateUi()
 
     //menu->setTitle(tr("File"));
     //fileAction->setText(tr("First action"));
+}
+
+void MainWindow::applyLive(const std::function<void()> &change)
+{
+    int saved = liveEditingEnabled;
+    if(deviceStatus)
+        liveEditingEnabled = true;
+    change();
+    liveEditingEnabled = saved;
 }
 
 void MainWindow::toggleLiveEditing(bool bVal)

@@ -5,6 +5,9 @@
  *
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
+ * Modified 2026-11-25 by Aurel: the About box gives the right license (GPL v2).
+ * Modified 2026-11-25 by Aurel: find translations next to the binary too.
+ * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +31,7 @@
 #include "fmtx.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "simpleview.h"
 
 #ifdef Q_WS_WIN
 #include <windows.h>
@@ -293,7 +297,7 @@ void MainWindow::toggleWindowMode()
 
 void MainWindow::SetWindowMode(bool normal)
 {
-    ui->tabWidget->setVisible(normal);
+    simpleView->setMiniMode(!normal);
     ui->menuBar->setVisible(normal);
     if(toolBarIsVisible)
         ui->toolBar->setVisible(normal);
@@ -356,7 +360,7 @@ void MainWindow::ShowAboutApp()
                             "info and help with testing.<br />\n"
                             "<br />\n"
                             "&copy; tipok.org.ua<br />\n"
-                            "License: GNU GPLv3<br />\n"
+                            "License: GNU GPLv2<br />\n"
                             "Commercial licenses avaliable too."
                             "</p></body></html>").arg(CurrentVersion));
 }
@@ -460,7 +464,7 @@ void MainWindow::UpdateFirmware()
 /**********************************************************
  * EEPROM READ/SAVE
  **********************************************************/
-void MainWindow::SaveEEPROMParams()
+bool MainWindow::SaveEEPROMParams()
 {
     int ret;
     qDebug() << __FUNCTION__;
@@ -472,7 +476,7 @@ void MainWindow::SaveEEPROMParams()
 
     if(ret != QMessageBox::Yes) {
         qDebug() << "Aborted";
-        return;
+        return false;
     }
 
     bool is_ready_save = querier->is_ready;
@@ -490,13 +494,14 @@ void MainWindow::SaveEEPROMParams()
     if(ret != FMTX_MODE_OK){
         qDebug() << __FUNCTION__ << " write error!";
         QMessageBox::warning(this, tr("Can't write EEPROM"), tr("Error while writing EEPROM Config!"));
-        return;
+        return false;
     }
 
     qDebug() << __FUNCTION__ << "saved!";
     QMessageBox::information(this, tr("Write successed"), tr("EEPROM Config written successfuly!\n"
                                                              "You may restart device to run\n"
                                                              "configuration from EEPROM."));
+    return true;
 }
 
 void MainWindow::ShowEEPROMParams()
@@ -566,6 +571,24 @@ void MainWindow::SetRunEepromCfg(bool bVal)
 
 
 
+/* Installed translations, else the ones next to the binary or in the
+   source tree (running from a build directory). */
+QDir MainWindow::translationsDir()
+{
+    QStringList candidates;
+#ifdef TRANSLATIONSPATH
+    candidates << TRANSLATIONSPATH;
+#endif
+    candidates << directoryOf("translations").absolutePath()
+               << QDir(QApplication::applicationDirPath() + "/../translations").absolutePath();
+    for (const QString &path : candidates) {
+        QDir dir(path);
+        if (!dir.entryList(QStringList("fmstick_*.qm")).isEmpty())
+            return dir;
+    }
+    return QDir(candidates.first());
+}
+
 QDir MainWindow::directoryOf(const QString &subdir)
 {
     QDir dir(QApplication::applicationDirPath());
@@ -610,11 +633,7 @@ void MainWindow::createLanguageMenu()
         action->setChecked(true);
 
     /* look for other translations */
-#ifdef TRANSLATIONSPATH
-    QDir qmDir = QDir(TRANSLATIONSPATH);
-#else
-    QDir qmDir = directoryOf("translations");
-#endif
+    QDir qmDir = translationsDir();
     QStringList fileNames = qmDir.entryList(QStringList("fmstick_*.qm"));
     for (int i = 0; i < fileNames.size(); ++i) {
         QString locale = fileNames[i];
@@ -647,11 +666,7 @@ void MainWindow::switchLanguage(QAction *action)
     } else if(UsedLanguage == "auto")
         locale = QLocale::system().name();
 
-#ifdef TRANSLATIONSPATH
-    QDir qmDir = QDir(TRANSLATIONSPATH);
-#else
-    QDir qmDir = directoryOf("translations");
-#endif
+    QDir qmDir = translationsDir();
 
     appTranslator.load("fmstick_" + locale, qmDir.absolutePath());
     qtTranslator.load("qt_" + locale, QLibraryInfo::path(QLibraryInfo::TranslationsPath));

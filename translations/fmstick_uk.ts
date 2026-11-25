@@ -1965,7 +1965,7 @@ Thanks VRTP Forum users for&lt;br /&gt;
 info and help with testing.&lt;br /&gt;
 &lt;br /&gt;
 � tipok.org.ua&lt;br /&gt;
-License: GNU GPLv3&lt;br /&gt;
+License: GNU GPLv2&lt;br /&gt;
 Commercial licenses avaliable too.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="obsolete">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1980,7 +1980,7 @@ p, li { white-space: pre-wrap; }
 інформацію та допомогу при розробці пристрою.&lt;br /&gt;
 &lt;br /&gt;
 &amp;copy; tipok.org.ua&lt;br /&gt;
-Ліцензія: GNU GPLv3&lt;br /&gt;
+Ліцензія: GNU GPLv2&lt;br /&gt;
 Ліценія на розробку комерційної версії також доступна.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
@@ -1998,7 +1998,7 @@ Thanks VRTP Forum users for&lt;br /&gt;
 info and help with testing.&lt;br /&gt;
 &lt;br /&gt;
 &amp;copy; tipok.org.ua&lt;br /&gt;
-License: GNU GPLv3&lt;br /&gt;
+License: GNU GPLv2&lt;br /&gt;
 Commercial licenses avaliable too.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -2013,7 +2013,7 @@ p, li { white-space: pre-wrap; }
 інформацію та допомогу при розробці пристрою.&lt;br /&gt;
 &lt;br /&gt;
 &amp;copy; tipok.org.ua&lt;br /&gt;
-Ліцензія: GNU GPLv3&lt;br /&gt;
+Ліцензія: GNU GPLv2&lt;br /&gt;
 Ліценія на розробку комерційної версії також доступна.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
