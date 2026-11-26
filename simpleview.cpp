@@ -141,7 +141,6 @@ static void restyle(QWidget *w, const QString &css)
 
 SimpleView::SimpleView(MainWindow *mw, Ui::MainWindow *ui)
     : QObject(mw), mw(mw), ui(ui), advanced(false), mini(false), dirty(false),
-      inputLevel(-70), onAirNow(false),
       bannerFix(FixNone), usbVolumeMax(0)
 {
 }
@@ -185,8 +184,26 @@ void SimpleView::install()
     /* the window retranslates on language change */
     mw->installEventFilter(this);
 
+    connect(&playerTimer, SIGNAL(timeout()), this, SLOT(pollPlayers()));
+    playerTimer.start(2000);
+    QSettings settings;
+    settings.beginGroup("rt_auto");
+    rtPlayer = settings.value("player").toString();
+    rtPlayerName = settings.value("player_name").toString();
+    rtDefault = settings.value("default_text").toString();
+    bool autoOn = settings.value("enabled", false).toBool();
+    settings.endGroup();
+
     retranslate();
     syncFromUi();
+    if (autoOn) {
+        rtAutoCheck->blockSignals(true);
+        rtAutoCheck->setChecked(true);
+        rtAutoCheck->blockSignals(false);
+        setRtAuto(true);
+    } else {
+        setRtAuto(false);
+    }
     inputLevelChanged(ui->progressBar_audio_asq_measured->value());
     setAdvanced(false);
 }
@@ -402,6 +419,15 @@ void SimpleView::buildBody()
     rtHint = roleLabel("muted");
     rtHint->setWordWrap(true);
     c->addWidget(rtHint);
+    rtAutoCheck = new QCheckBox();
+    c->addWidget(rtAutoCheck);
+    rtPlayerCombo = new QComboBox();
+    c->addWidget(rtPlayerCombo);
+    rtAutoInfo = roleLabel("muted");
+    rtAutoInfo->setWordWrap(true);
+    c->addWidget(rtAutoInfo);
+    connect(rtAutoCheck, SIGNAL(toggled(bool)), this, SLOT(rtAutoToggled(bool)));
+    connect(rtPlayerCombo, SIGNAL(activated(int)), this, SLOT(rtPlayerPicked(int)));
     ptyLabel = new QLabel();
     c->addWidget(ptyLabel);
     ptyCombo = new QComboBox();
@@ -460,8 +486,10 @@ void SimpleView::retranslate()
                             "and cap the peaks. Details in Advanced mode, Sound tab."));
     rdsTitle->setText(tr("RDS information"));
     psLabel->setText(tr("Station name"));
-    rtLabel->setText(tr("Radio text"));
     rtHint->setText(tr("Scrolling text shown by the receiver, 64 characters at most."));
+    rtAutoCheck->setText(tr("Show the track a media player is playing"));
+    rtAutoCheck->setToolTip(tr("VLC, Chrome, Firefox, Spotify, Rhythmbox... (MPRIS)"));
+    rtLabel->setText(rtAuto ? tr("Text when nothing is playing") : tr("Radio text"));
     ptyLabel->setText(tr("Programme type"));
     saveButton->setText(tr("Keep at startup"));
     saveButton->setToolTip(tr("Write these settings to the transmitter's memory (EEPROM)."));
@@ -640,7 +668,16 @@ void SimpleView::refresh()
     QString rtNow = ui->plainTextEdit_rds_rt->toPlainText();
     while (rtNow.endsWith(' '))
         rtNow.chop(1);
-    web["rt"] = rtNow;
+    web["rt"] = rtAuto ? rtDefault : rtNow;
+    web["rtLabel"] = rtLabel->text();
+    {
+        QJsonArray players;
+        for (int i = 1; i < rtPlayerCombo->count(); i++)
+            players.append(QJsonObject{ { "id", rtPlayerCombo->itemData(i).toString() }, { "name", rtPlayerCombo->itemText(i) } });
+        web["rtAuto"] = QJsonObject{ { "enabled", rtAuto }, { "label", rtAutoCheck->text() },
+                                     { "player", rtPlayer }, { "anyLabel", rtPlayerCombo->count() ? rtPlayerCombo->itemText(0) : QString() },
+                                     { "players", players }, { "info", rtAuto ? rtAutoInfo->text() : QString() } };
+    }
     web["dirty"] = dirty;
     {
         QMutexLocker lock(&webStateMutex);
@@ -689,6 +726,8 @@ void SimpleView::syncFromUi()
     QString rt = ui->plainTextEdit_rds_rt->toPlainText();
     while (rt.endsWith(' '))
         rt.chop(1);
+    if (rtAuto)
+        rt = rtDefault;   /* the field edits the text sent when nothing plays */
     if (!rtEdit->hasFocus() && rtEdit->text() != rt)
         rtEdit->setText(rt);
     rtCount->setText(QString("%1 / 64").arg(rtEdit->text().length()));
@@ -750,6 +789,14 @@ void SimpleView::psEdited(const QString &text)
 
 void SimpleView::rtEdited()
 {
+    if (rtAuto) {
+        if (rtDefault == rtEdit->text())
+            return;
+        rtDefault = rtEdit->text();
+        saveRtAutoSettings();
+        pollPlayers();       /* sent now if nothing is playing */
+        return;
+    }
     QString current = ui->plainTextEdit_rds_rt->toPlainText();
     while (current.endsWith(' '))
         current.chop(1);
@@ -816,6 +863,14 @@ void SimpleView::webSet(const QString &field, const QString &value)
         int i = value.toInt();
         if (i >= 0 && i < dspCombo->count())
             dspPicked(i);
+    } else if (field == "rtAuto") {
+        rtAutoCheck->setChecked(value == "on");     /* -> rtAutoToggled() */
+    } else if (field == "rtPlayer") {
+        rtPlayer = value;
+        int i = rtPlayerCombo->findData(value);
+        rtPlayerName = value.isEmpty() || i < 0 ? QString() : rtPlayerCombo->itemText(i);
+        saveRtAutoSettings();
+        pollPlayers();
     } else if (field == "fix") {
         bannerAction();
     } else if (field == "save") {
@@ -823,6 +878,114 @@ void SimpleView::webSet(const QString &field, const QString &value)
             markClean();
     }
     syncFromUi();
+}
+
+/* ------------------------------------------------- RT from a media player */
+
+void SimpleView::sendRt(const QString &text)
+{
+    QString current = ui->plainTextEdit_rds_rt->toPlainText();
+    while (current.endsWith(' '))
+        current.chop(1);
+    if (current == text || !mw->deviceStatus)
+        return;
+    /* an automatic change: not counted as a change to keep at startup */
+    mw->applyLive([&]() { ui->plainTextEdit_rds_rt->setPlainText(text); });
+}
+
+void SimpleView::saveRtAutoSettings()
+{
+    QSettings settings;
+    settings.beginGroup("rt_auto");
+    settings.setValue("enabled", rtAuto);
+    settings.setValue("player", rtPlayer);
+    settings.setValue("player_name", rtPlayerName);
+    settings.setValue("default_text", rtDefault);
+    settings.endGroup();
+}
+
+void SimpleView::setRtAuto(bool on)
+{
+    rtAuto = on;
+    rtPlayerCombo->setVisible(on);
+    rtAutoInfo->setVisible(on);
+    rtLabel->setText(on ? tr("Text when nothing is playing") : tr("Radio text"));
+    syncFromUi();
+    if (on)
+        pollPlayers();
+}
+
+void SimpleView::rtAutoToggled(bool on)
+{
+    if (on) {
+        /* the text on air becomes the one sent when nothing plays */
+        QString current = ui->plainTextEdit_rds_rt->toPlainText();
+        while (current.endsWith(' '))
+            current.chop(1);
+        rtDefault = current;
+    }
+    setRtAuto(on);
+    if (!on)
+        sendRt(rtDefault);
+    saveRtAutoSettings();
+}
+
+void SimpleView::rtPlayerPicked(int index)
+{
+    rtPlayer = index <= 0 ? QString() : rtPlayerCombo->itemData(index).toString();
+    rtPlayerName = index <= 0 ? QString() : rtPlayerCombo->itemText(index);
+    saveRtAutoSettings();
+    pollPlayers();
+}
+
+void SimpleView::pollPlayers()
+{
+    if (!rtAuto)
+        return;
+    const QList<MediaPlayer> players = nowPlaying.players();
+
+    /* the list: "any player", then each player; keep the chosen one listed */
+    QList<QPair<QString, QString>> items;    /* id, name */
+    items << qMakePair(QString(), tr("The first player that is playing"));
+    for (const MediaPlayer &p : players) {
+        bool listed = false;
+        for (const auto &it : items)
+            listed = listed || it.first == p.id;
+        if (!listed)
+            items << qMakePair(p.id, p.identity);
+        if (p.id == rtPlayer)
+            rtPlayerName = p.identity;
+    }
+    bool chosenListed = rtPlayer.isEmpty();
+    for (const auto &it : items)
+        chosenListed = chosenListed || it.first == rtPlayer;
+    if (!chosenListed)
+        items << qMakePair(rtPlayer, rtPlayerName.isEmpty() ? rtPlayer : rtPlayerName);
+    bool same = rtPlayerCombo->count() == items.size();
+    for (int i = 0; same && i < items.size(); i++)
+        same = rtPlayerCombo->itemData(i).toString() == items[i].first && rtPlayerCombo->itemText(i) == items[i].second;
+    if (!same) {
+        rtPlayerCombo->clear();
+        for (const auto &it : items)
+            rtPlayerCombo->addItem(it.second, it.first);
+    }
+    rtPlayerCombo->setCurrentIndex(qMax(0, rtPlayerCombo->findData(rtPlayer)));
+
+    const MediaPlayer *chosen = nullptr;
+    for (const MediaPlayer &p : players) {
+        if (p.playing && !p.text.isEmpty() && (rtPlayer.isEmpty() || p.id == rtPlayer)) {
+            chosen = &p;
+            break;
+        }
+    }
+    if (chosen) {
+        rtAutoInfo->setText(tr("Now playing in %1: %2").arg(chosen->identity, chosen->text));
+        sendRt(chosen->text.left(64));
+    } else {
+        rtAutoInfo->setText(rtPlayer.isEmpty() ? tr("No player is playing: the text above is sent.")
+                                               : tr("%1 is not playing: the text above is sent.").arg(rtPlayerName.isEmpty() ? rtPlayer : rtPlayerName));
+        sendRt(rtDefault);
+    }
 }
 
 void SimpleView::bannerAction()

@@ -6,6 +6,7 @@
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
+ * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 #include "mainwindow.h"
 #include "fmtx.h"
 #include "rdstext.h"
+#include "onair.h"
 #include "logging.h"
 
 Querier::Querier(QObject *parent) :
@@ -180,6 +182,7 @@ void Querier::CheckFrontendFlags()
                 } else {
                     //plainTextEdit_rds_rt
                     setRDSRTMessage(rdsLine);
+                    OnAir::remember("rt", rdsLine);
                 }
 
                 /* parse and find RT+ tags */

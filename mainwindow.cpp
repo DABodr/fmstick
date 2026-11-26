@@ -8,6 +8,7 @@
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: apply the saved language at startup.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
+ * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@
 #include "fmtx.h"
 #include "logging.h"
 #include "simpleview.h"
+#include "onair.h"
 
 #define REVISION   "$Rev: 268 $"
 
@@ -541,6 +543,23 @@ void MainWindow::RedrawEverything(bool bFound)
 
     if(ret!=FMTX_MODE_OK)
         goto redraw_err;
+
+    /* The PS/RT read above are the EEPROM's: if the transmitter has not been
+       unplugged since we last sent ours, the chip still sends those. Show
+       them with live editing off, so they are not sent again. */
+    {
+        int live = liveEditingEnabled;
+        liveEditingEnabled = false;
+        QString onAir;
+        if(OnAir::recall("ps", &onAir))
+            ui->lineEdit_station_id->setText(onAir);
+        if(OnAir::recall("rt", &onAir)) {
+            ui->plainTextEdit_rds_rt->blockSignals(true);
+            ui->plainTextEdit_rds_rt->setPlainText(onAir);
+            ui->plainTextEdit_rds_rt->blockSignals(false);
+        }
+        liveEditingEnabled = live;
+    }
 
     liveEditingEnabled=ui->checkBox_sw_live_edit->isChecked();
     statusBar()->hide();

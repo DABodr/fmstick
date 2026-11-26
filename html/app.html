@@ -82,9 +82,12 @@
         <span class="hint" id="ps-hint" data-i18n="psHint" hidden>Plus de 8 caractères : les récepteurs affichent le nom par morceaux de 8.</span>
       </label>
       <label class="field">
-        <span class="field-head"><span data-i18n="rt">Texte défilant</span><span class="muted" id="rt-count"></span></span>
+        <span class="field-head"><span id="rt-label" data-i18n="rt">Texte défilant</span><span class="muted" id="rt-count"></span></span>
         <input id="rt" type="text" maxlength="64" autocomplete="off">
       </label>
+      <label class="check"><input id="rt-auto" type="checkbox"><span id="rt-auto-label"></span></label>
+      <select id="rt-player" class="player" hidden></select>
+      <p class="hint" id="rt-auto-info" hidden></p>
       <label class="field">
         <span data-i18n="pty">Type de programme</span>
         <select id="pty"></select>

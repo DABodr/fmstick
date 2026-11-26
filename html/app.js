@@ -152,6 +152,19 @@ function render() {
 
   setValue($('ps'), s.ps);
   setValue($('rt'), s.rt);
+  /* RadioText from a media player: the field then holds the text sent
+     when nothing is playing */
+  const a = s.rtAuto || {};
+  $('rt-label').textContent = s.rtLabel || t('rt');
+  if (document.activeElement !== $('rt-auto')) $('rt-auto').checked = !!a.enabled;
+  $('rt-auto-label').textContent = a.label || '';
+  $('rt-player').hidden = !a.enabled;
+  $('rt-auto-info').hidden = !a.enabled;
+  $('rt-auto-info').textContent = a.info || '';
+  const players = a.players || [];
+  fillSelect($('rt-player'), { items: [a.anyLabel || ''].concat(players.map((p) => p.name)),
+                               index: a.player ? players.findIndex((p) => p.id === a.player) + 1 : 0 });
+  $('rt-player').dataset.ids = JSON.stringify([''].concat(players.map((p) => p.id)));
   updateCounts();
   fillSelect($('pty'), s.pty);
 
@@ -194,6 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
   $('pty').addEventListener('change', (e) => send('pty', e.target.value));
   onCommit($('ps'), 'ps');
   onCommit($('rt'), 'rt');
+  $('rt-auto').addEventListener('change', (e) => send('rtAuto', e.target.checked ? 'on' : 'off'));
+  $('rt-player').addEventListener('change', (e) => {
+    send('rtPlayer', JSON.parse(e.target.dataset.ids || '[""]')[+e.target.value] || '');
+  });
   $('ps').addEventListener('input', updateCounts);
   $('rt').addEventListener('input', updateCounts);
   $('save').addEventListener('click', () => { if (confirm(t('confirmSave'))) send('save'); });

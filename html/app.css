@@ -125,6 +125,10 @@ main.off { opacity: .5; pointer-events: none; }
 .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
 #ps { letter-spacing: 1px; font-weight: 600; }
 
+.check { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.player { min-height: 40px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--field); background: var(--card); color: var(--text); }
+
 /* footer */
 .bottom {
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px;
