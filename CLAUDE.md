@@ -56,8 +56,9 @@ English.
 - `Querier`: 1 s timer that polls the device (ASQ level, RT file, RDS time).
   `HidAccessMutex` serialises device access inside the app.
 - On connect, `RedrawEverything()` reads the EEPROM, then the running
-  config. The chip cannot report the PS/RT it is sending: what the app
-  shows for them comes from the EEPROM image.
+  config. The chip cannot report the PS/RT it is sending, so the app shows
+  the EEPROM image's, unless `onair.h` remembers what it last sent in the
+  same USB plug session (boot id + USB device number): then it shows that.
 - RadioText from a media player: `nowplaying.cpp` reads MPRIS over D-Bus
   (polled every 2 s by `SimpleView::pollPlayers()`). Match players by
   `MediaPlayer::id` (bus name without `.instanceNNN`), never by their

@@ -7,6 +7,7 @@
 # Modified 2026-11-25 by Aurel: French translation.
 # Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
 # Modified 2026-11-26 by Aurel: RadioText from a media player (MPRIS, Qt D-Bus).
+# Modified 2026-11-26 by Aurel: PS/RT on air remembered across restarts.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
@@ -84,6 +85,7 @@ HEADERS +=\
     usbvolume.h \
     simpleview.h \
     nowplaying.h \
+    onair.h \
     rdstext.h \
     requestmapper.h \
     controller/txcontroller.h \

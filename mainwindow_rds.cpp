@@ -2,6 +2,7 @@
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
+ * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
  */
 
 #include "mainwindow.h"
@@ -10,6 +11,7 @@
 
 #include "fmtx.h"
 #include "rdstext.h"
+#include "onair.h"
 #include "logging.h"
 
 /******************************************************************
@@ -65,6 +67,8 @@ void MainWindow::DelayedSendPS()
         if(SetRDSPSMessage(i) != FMTX_MODE_OK)
             return;
     }
+    if(fmtxCmdSpecial == FMTX_SPECIAL_FRONTEND)
+        OnAir::remember("ps", ui->lineEdit_station_id->text());   /* see onair.h */
 }
 
 
@@ -560,6 +564,8 @@ int MainWindow::SetRDSRT(QString *text_in)
         if(ret != FMTX_MODE_OK){
             qDebug() << "Can't set RDS RT Message";
             SetTransmitIcon(ICON_WARN);
+        } else if(fmtxCmdSpecial == FMTX_SPECIAL_FRONTEND) {
+            OnAir::remember("rt", text);   /* shown again on reconnect, see onair.h */
         }
         querier->HidAccessMutex.unlock();
     }
