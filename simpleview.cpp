@@ -190,7 +190,7 @@ void SimpleView::install()
     settings.beginGroup("rt_auto");
     rtPlayer = settings.value("player").toString();
     rtPlayerName = settings.value("player_name").toString();
-    rtDefault = settings.value("default_text").toString();
+    rtDefault = settings.value("default_text", "FM RDS transmitter").toString();
     bool autoOn = settings.value("enabled", false).toBool();
     settings.endGroup();
 
@@ -982,8 +982,18 @@ void SimpleView::pollPlayers()
         rtAutoInfo->setText(tr("Now playing in %1: %2").arg(chosen->identity, chosen->text));
         sendRt(chosen->text.left(64));
     } else {
-        rtAutoInfo->setText(rtPlayer.isEmpty() ? tr("No player is playing: the text above is sent.")
-                                               : tr("%1 is not playing: the text above is sent.").arg(rtPlayerName.isEmpty() ? rtPlayer : rtPlayerName));
+        /* playing, but no title: a stream without metadata, or VLC 3 on an
+           https:// stream (its HTTPS access ignores ICY titles) */
+        const MediaPlayer *silent = nullptr;
+        for (const MediaPlayer &p : players)
+            if (p.playing && (rtPlayer.isEmpty() || p.id == rtPlayer))
+                silent = silent ? silent : &p;
+        if (silent)
+            rtAutoInfo->setText(tr("%1 is playing but sends no title: the text above is sent.").arg(silent->identity));
+        else if (rtPlayer.isEmpty())
+            rtAutoInfo->setText(tr("No player is playing: the text above is sent."));
+        else
+            rtAutoInfo->setText(tr("%1 is not playing: the text above is sent.").arg(rtPlayerName.isEmpty() ? rtPlayer : rtPlayerName));
         sendRt(rtDefault);
     }
 }

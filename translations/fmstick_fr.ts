@@ -2300,5 +2300,9 @@ et écrêtent les pointes. Réglages détaillés : Mode avancé, onglet Son.</t
             <source>%1 is not playing: the text above is sent.</source>
             <translation>%1 ne joue pas : le texte ci-dessus est envoyé.</translation>
         </message>
+        <message>
+            <source>%1 is playing but sends no title: the text above is sent.</source>
+            <translation>%1 joue mais n'envoie pas de titre : le texte ci-dessus est envoyé.</translation>
+        </message>
     </context>
 </TS>

@@ -6,6 +6,7 @@
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: remember the simple/advanced mode.
+ * Modified 2026-11-26 by Aurel: factory defaults: "FM STICK", "FM RDS transmitter", 100.0 MHz.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -312,9 +313,9 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
 
     ui->comboBox_rds_ps_percentage->setCurrentIndex(reader->value("ps_percentage_id", "3").toInt());
     ui->spinBox_rds_ps_repeats->setValue(reader->value("ps_repeats", "3").toInt());
-    ui->spinBox_rds_ps_msgs->setValue(reader->value("ps_num", "2").toInt());
-    ui->lineEdit_rds_ps_1->setText(reader->value("ps_1", "FmStick").toString());
-    ui->lineEdit_rds_ps_2->setText(reader->value("ps_2", "Example").toString());
+    ui->spinBox_rds_ps_msgs->setValue(reader->value("ps_num", "1").toInt());
+    ui->lineEdit_rds_ps_1->setText(reader->value("ps_1", "FM STICK").toString());
+    ui->lineEdit_rds_ps_2->setText(reader->value("ps_2", "").toString());
     ui->lineEdit_rds_ps_3->setText(reader->value("ps_3", "").toString());
     ui->lineEdit_rds_ps_4->setText(reader->value("ps_4", "").toString());
     ui->lineEdit_rds_ps_5->setText(reader->value("ps_5", "").toString());
@@ -325,7 +326,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
     ui->lineEdit_rds_ps_10->setText(reader->value("ps_10", "").toString());
     ui->lineEdit_rds_ps_11->setText(reader->value("ps_11", "").toString());
     ui->lineEdit_rds_ps_12->setText(reader->value("ps_12", "").toString());
-    ui->plainTextEdit_rds_rt->setPlainText(reader->value("rt", "").toString());
+    ui->plainTextEdit_rds_rt->setPlainText(reader->value("rt", "FM RDS transmitter").toString());
     reader->endGroup();
 
     SetDigitalAudioHack();
