@@ -66,7 +66,9 @@ English.
   `MediaPlayer::id` (bus name without `.instanceNNN`), never by their
   identity, which some translate ("Lecteur multimédia VLC"). VLC owns two
   bus names per player; web radios put the track in `vlc:nowplaying`, the
-  station in `xesam:title`.
+  station in `xesam:title`. VLC 3 publishes no title at all for `https://`
+  streams (its HTTPS access ignores ICY metadata): test with `http://`
+  ones, e.g. `http://stream.radioparadise.com/mp3-128`.
 
 ## Hardware quirks (measured on the Vast HiFi-FMT, don't re-measure)
 
