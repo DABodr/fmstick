@@ -91,6 +91,14 @@ English.
   capture, phase-difference discriminator, ~4 % high on this dongle): under
   75 kHz with the sources at 100 %; VLC at 153 % (+11 dB, clipped input)
   gave brief peaks around 79 kHz despite the chip's limiter.
+- Compressor/limiter presets, measured on air as gain over unprocessed audio
+  (simultaneous `parec` of the HiFi-FMT sink monitor + RTL-SDR capture, so
+  the music's own level cancels out): light +2.0 dB, normal +4.4 dB,
+  strong +5.2 dB. The chip tops out around +5 dB; local commercial
+  stations were still ~3 dB louder on a quiet source. "Strong" stays
+  under 75 kHz on normal music; on very loud bass-heavy material (input
+  ~-9 dB RMS) it let through brief peaks (~79 kHz, 0.003 % of the time);
+  "normal" never exceeded 75 kHz in these tests.
 - TEF6686 receivers (PE5PVB firmware, source on GitHub) with "RT buffering"
   only show a RadioText when the A/B flag toggles again, i.e. when the next
   text starts. So each new text is sent again 6 s later with the flag
