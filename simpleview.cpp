@@ -440,6 +440,9 @@ void SimpleView::buildBody()
     ptyCombo->setModel(ui->comboBox_rds_pty->model());   /* same list as the RDS tab */
     ptyLabel->setBuddy(ptyCombo);
     c->addWidget(ptyCombo);
+    clockCheck = new QCheckBox();
+    c->addWidget(clockCheck);
+    connect(clockCheck, SIGNAL(toggled(bool)), this, SLOT(clockToggled(bool)));
     c->addStretch(1);
     connect(psEdit, SIGNAL(textEdited(QString)), this, SLOT(psEdited(QString)));
     connect(rtEdit, SIGNAL(editingFinished()), this, SLOT(rtEdited()));
@@ -501,6 +504,9 @@ void SimpleView::retranslate()
     rtAutoCheck->setToolTip(tr("VLC, Chrome, Firefox, Spotify, Rhythmbox... (MPRIS)"));
     rtLabel->setText(rtAuto ? tr("Text when nothing is playing") : tr("Radio text"));
     ptyLabel->setText(tr("Programme type"));
+    clockCheck->setText(tr("Send the time"));
+    clockCheck->setToolTip(tr("RDS clock time, at the start of each minute: UTC with the local offset, "
+                              "summer time included. Receivers can set their clock from it."));
     saveButton->setText(tr("Keep at startup"));
     saveButton->setToolTip(tr("Write these settings to the transmitter's memory (EEPROM)."));
     syncFromUi();
@@ -690,6 +696,8 @@ void SimpleView::refresh()
                                      { "players", players }, { "info", rtAuto ? rtAutoInfo->text() : QString() } };
     }
     web["dirty"] = dirty;
+    web["clock"] = QJsonObject{ { "enabled", clockCheck->isChecked() }, { "label", clockCheck->text() },
+                                { "hint", clockCheck->toolTip() } };
     {
         QMutexLocker lock(&webStateMutex);
         webStateJson = QJsonDocument(web).toJson(QJsonDocument::Compact);
@@ -743,6 +751,10 @@ void SimpleView::syncFromUi()
     if (!rtEdit->hasFocus() && rtEdit->text() != rt)
         rtEdit->setText(rt);
     rtCount->setText(QString("%1 / 64").arg(rtEdit->text().length()));
+
+    clockCheck->blockSignals(true);
+    clockCheck->setChecked(ui->checkBox_rds_time->isChecked() && ui->checkBox_rds_fifo->isChecked());
+    clockCheck->blockSignals(false);
 
     if (dspCombo->currentIndex() != ui->comboBox_audioPreset->currentIndex())
         dspCombo->setCurrentIndex(ui->comboBox_audioPreset->currentIndex());
@@ -875,6 +887,8 @@ void SimpleView::webSet(const QString &field, const QString &value)
         int i = value.toInt();
         if (i >= 0 && i < dspCombo->count())
             dspPicked(i);
+    } else if (field == "clock") {
+        clockCheck->setChecked(value == "on");      /* -> clockToggled() */
     } else if (field == "rtAuto") {
         rtAutoCheck->setChecked(value == "on");     /* -> rtAutoToggled() */
     } else if (field == "rtPlayer") {
@@ -890,6 +904,12 @@ void SimpleView::webSet(const QString &field, const QString &value)
             markClean();
     }
     syncFromUi();
+}
+
+void SimpleView::clockToggled(bool on)
+{
+    mw->setRdsClock(on);
+    markDirty();
 }
 
 /* ------------------------------------------------- RT from a media player */

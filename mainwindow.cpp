@@ -10,6 +10,7 @@
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
  * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
+ * Modified 2026-11-26 by Aurel: RDS clock time sent at each minute, switch for the simple screen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +82,10 @@ MainWindow::MainWindow(QWidget *parent) :
     rtRepeatTimer.setSingleShot(true);
     rtRepeatTimer.setInterval(6000);   /* the text received in full at least twice */
     connect(&rtRepeatTimer, &QTimer::timeout, this, &MainWindow::repeatRt);
+    rdsClockTimer.setSingleShot(true);
+    rdsClockTimer.setTimerType(Qt::PreciseTimer);   /* a coarse timer may fire 3 s early */
+    connect(&rdsClockTimer, &QTimer::timeout, this, &MainWindow::sendRdsClock);
+    scheduleRdsClock();
 
     ui->lineEdit_sw_ver->setText(CurrentVersion);
     ui->checkBox_sw_runAtStartup->setChecked(GetRunAtStartup());
@@ -372,10 +377,8 @@ void MainWindow::readFromConfig()
     SetWindowMode(!ui->checkBox_mini_mode->isChecked());
     SetAudioCompLimPresetByParams();
 
-    /* actions for querier */
-    if(ui->checkBox_rds_time->isChecked()) {
-        querier->rdsInterval = ui->spinBox_rds_time_int->value() * 1000;
-    }
+    /* the RDS clock time is sent by sendRdsClock(), at each minute */
+    toggleRDStime(0);
 
     /* try to connect */
     toggleConnection(false, false);

@@ -2312,5 +2312,13 @@ et écrêtent les pointes. Réglages détaillés : Mode avancé, onglet Son.</t
             <source>%1 dBµV · ≈ %2</source>
             <translation>%1 dBµV · ≈ %2</translation>
         </message>
+        <message>
+            <source>Send the time</source>
+            <translation>Envoyer l'heure</translation>
+        </message>
+        <message>
+            <source>RDS clock time, at the start of each minute: UTC with the local offset, summer time included. Receivers can set their clock from it.</source>
+            <translation>Heure RDS, au début de chaque minute : heure UTC avec le décalage local, heure d'été comprise. Les récepteurs peuvent régler leur horloge dessus.</translation>
+        </message>
     </context>
 </TS>

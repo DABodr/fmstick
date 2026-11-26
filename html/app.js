@@ -168,6 +168,10 @@ function render() {
   $('rt-player').dataset.ids = JSON.stringify([''].concat(players.map((p) => p.id)));
   updateCounts();
   fillSelect($('pty'), s.pty);
+  const ck = s.clock || {};
+  if (document.activeElement !== $('clock')) $('clock').checked = !!ck.enabled;
+  $('clock-label').textContent = ck.label || '';
+  $('clock').closest('label').title = ck.hint || '';
 
   $('save-dot').style.background = s.dirty ? '#B45309' : '#16A34A';
   $('save-text').textContent = t(s.dirty ? 'dirty' : 'clean');
@@ -206,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('banner-action').addEventListener('click', () => send('fix'));
   $('dsp').addEventListener('change', (e) => send('dsp', e.target.value));
   $('pty').addEventListener('change', (e) => send('pty', e.target.value));
+  $('clock').addEventListener('change', (e) => send('clock', e.target.checked ? 'on' : 'off'));
   onCommit($('ps'), 'ps');
   onCommit($('rt'), 'rt');
   $('rt-auto').addEventListener('change', (e) => send('rtAuto', e.target.checked ? 'on' : 'off'));

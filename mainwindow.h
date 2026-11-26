@@ -10,6 +10,7 @@
  * Modified 2026-11-25 by Aurel: web UI address, live changes and state.
  * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
  * Modified 2026-11-26 by Aurel: an out-of-band frequency read on connect is not shown.
+ * Modified 2026-11-26 by Aurel: RDS clock time sent at each minute, switch for the simple screen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -223,6 +224,10 @@ public slots:
     void rtSent(const QString &text);
     void repeatRt();
     void recheckTuneStatus(int attempt);
+    /* RDS clock time, sent at the start of each minute */
+    void scheduleRdsClock();
+    void sendRdsClock();
+    void setRdsClock(bool on);
     bool applyItemFromHTTPListener(QObject *obj, QString *value);
     bool openBrowser(const QString& rUrl, QWidget* parent=NULL);
 
@@ -283,6 +288,7 @@ private:
     SimpleView *simpleView;
     /* RadioText sent again with the A/B flag toggled, see rtSent() */
     QTimer rtRepeatTimer;
+    QTimer rdsClockTimer;
     QString rtRepeatText;
     bool rtRepeating = false;
     void retranslateUsbVolumeUi();
