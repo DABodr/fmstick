@@ -190,7 +190,7 @@ void SimpleView::install()
     settings.beginGroup("rt_auto");
     rtPlayer = settings.value("player").toString();
     rtPlayerName = settings.value("player_name").toString();
-    rtDefault = settings.value("default_text").toString();
+    rtDefault = settings.value("default_text", "FM RDS transmitter").toString();
     bool autoOn = settings.value("enabled", false).toBool();
     settings.endGroup();
 
