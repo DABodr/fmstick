@@ -113,6 +113,7 @@ private:
     QPushButton *freqDown, *freqUp;
     FreqSpinBox *freq;
     QLabel *powerTitle, *powerDetail, *powerNote;
+    QLabel *advancedPowerMw;   /* next to the power field of the Transmitter tab */
     QButtonGroup *powerGroup;
     QPushButton *powerButtons[3];
     QPushButton *txButton;

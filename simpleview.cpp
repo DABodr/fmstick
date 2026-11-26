@@ -14,6 +14,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "usbvolume.h"
+#include "rfpower.h"
 
 #include <QtWidgets>
 #include <QJsonArray>
@@ -157,6 +158,10 @@ void SimpleView::install()
         w->setStyleSheet(STYLE);
 
     ui->tabWidget->setStyleSheet(ADVANCED_STYLE);
+    /* the power as an estimate in mW, next to the dBuV field */
+    advancedPowerMw = new QLabel();
+    advancedPowerMw->setStyleSheet("color: #5B6470;");
+    ui->horizontalLayout_15->addWidget(advancedPowerMw);
     ui->tabWidget->setDocumentMode(false);
 
     QVBoxLayout *root = ui->verticalLayout_49;
@@ -478,6 +483,10 @@ void SimpleView::retranslate()
     powerButtons[1]->setText(tr("Medium"));
     powerButtons[2]->setText(tr("Maximum"));
     powerNote->setText(tr("At high power, check what the regulations of your country allow."));
+    QString powerHint = tr("Estimated power into 50 Ω. The chip sets an RF voltage: the power actually "
+                           "delivered depends on the board and the antenna.");
+    powerDetail->setToolTip(powerHint);
+    advancedPowerMw->setToolTip(powerHint);
     soundTitle->setText(tr("Sound"));
     levelTitle->setText(tr("Input level"));
     modTitle->setText(tr("Modulation"));
@@ -658,6 +667,7 @@ void SimpleView::refresh()
     web["powerPresets"] = QJsonArray{ POWER_PRESETS[0], POWER_PRESETS[1], POWER_PRESETS[2] };
     web["powerLabels"] = QJsonArray{ powerButtons[0]->text(), powerButtons[1]->text(), powerButtons[2]->text() };
     web["powerDetail"] = powerDetail->text();
+    web["powerHint"] = powerDetail->toolTip();
     web["onAir"] = onAir;
     web["txLabel"] = txButton->text();
     web["inputLevel"] = state == Disconnected ? QJsonValue() : QJsonValue(inputLevel);
@@ -714,8 +724,9 @@ void SimpleView::syncFromUi()
         if (power == POWER_PRESETS[i])
             preset = i;
     }
-    powerDetail->setText(preset < 0 ? tr("Custom: %1 dBµV").arg(power)
-                                    : QString::fromUtf8("%1 dBµV").arg(power));
+    powerDetail->setText(preset < 0 ? tr("Custom: %1 dBµV · ≈ %2").arg(power).arg(rfPowerText(power))
+                                    : tr("%1 dBµV · ≈ %2").arg(power).arg(rfPowerText(power)));
+    advancedPowerMw->setText(QString::fromUtf8("≈ ") + rfPowerText(power));
 
     QString ps = ui->lineEdit_station_id->text();
     if (!psEdit->hasFocus() && psEdit->text() != ps)

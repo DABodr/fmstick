@@ -133,6 +133,7 @@ function render() {
     btn.setAttribute('aria-checked', v === s.power ? 'true' : 'false');
   });
   $('power-detail').textContent = s.powerDetail;
+  $('power-detail').title = s.powerHint || '';
 
   $('tx').textContent = s.txLabel;
   $('tx').dataset.on = s.onAir ? 'true' : 'false';
