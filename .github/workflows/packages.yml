@@ -1,9 +1,12 @@
-# Debian 12 packages of FmStick for amd64 and arm64, built on native
-# runners in a debian:bookworm container.
+# Debian 12 and 13 packages of FmStick for amd64 and arm64, built on
+# native runners in debian:bookworm / debian:trixie containers.
 #   - each push to master and each pull request: build and test-install,
 #     the .deb files kept as workflow artifacts;
-#   - a tag v*: the same, then a GitHub release with both .deb files.
+#   - a tag v*: the same, then a GitHub release with all the .deb files;
+#   - run by hand with a tag: adds the packages to that existing release.
+# The version gets a +deb12 / +deb13 suffix, so the files differ.
 # Copyright (C) 2026 Aurel. GPL v2 or later.
+# Modified 2026-11-26 by Aurel: Debian 13 (trixie) packages too.
 
 name: Debian packages
 
@@ -13,6 +16,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to add the packages to (e.g. v2.0); empty: build only'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -22,13 +30,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        distro: [bookworm, trixie]
+        arch: [amd64, arm64]
         include:
+          - distro: bookworm
+            suffix: deb12
+          - distro: trixie
+            suffix: deb13
           - arch: amd64
             runner: ubuntu-24.04
           - arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    container: debian:bookworm
+    container: debian:${{ matrix.distro }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,6 +54,9 @@ jobs:
 
       - name: Build
         run: |
+          # 2.0 -> 2.0+deb12 (first changelog entry only)
+          sed -i '1s/(\([^)]*\))/(\1+${{ matrix.suffix }})/' debian/changelog
+          head -1 debian/changelog
           dpkg-buildpackage -b -us -uc
           mkdir -p out
           mv ../fmstick_*.deb out/
@@ -58,11 +75,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: fmstick-${{ matrix.arch }}
+          name: fmstick-${{ matrix.suffix }}-${{ matrix.arch }}
           path: out/*.deb
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != ''
     needs: deb
     runs-on: ubuntu-24.04
     permissions:
@@ -75,10 +92,17 @@ jobs:
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           ls -l dist
-          gh release create "$GITHUB_REF_NAME" dist/*.deb \
-            --repo "$GITHUB_REPOSITORY" --title "FmStick ${GITHUB_REF_NAME#v}" \
-            --notes "Debian 12 (bookworm) packages for amd64 and arm64 (Raspberry Pi OS bookworm 64-bit too).
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.deb --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" dist/*.deb \
+              --repo "$GITHUB_REPOSITORY" --title "FmStick ${TAG#v}" \
+              --notes "Debian packages for amd64 (PC) and arm64 (64-bit Raspberry Pi):
+          - \`+deb13\`: Debian 13 trixie, current Raspberry Pi OS;
+          - \`+deb12\`: Debian 12 bookworm, older Raspberry Pi OS.
 
-          Install: \`sudo apt install ./fmstick_*_<arch>.deb\`, then plug the transmitter in (the udev rule lets users drive it)."
+          Install with apt, which fetches the Qt6 libraries: \`sudo apt install ./fmstick_*+deb13_arm64.deb\`, then plug the transmitter in (the udev rule lets users drive it)."
+          fi
