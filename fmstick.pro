@@ -6,13 +6,14 @@
 # Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
 # Modified 2026-11-25 by Aurel: French translation.
 # Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
+# Modified 2026-11-26 by Aurel: RadioText from a media player (MPRIS, Qt D-Bus).
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
 include(qtsingleapplication/src/qtsingleapplication.pri)
 include(QtWebApp-v1.2.9/lib/bfHttpServer/src/bfHttpServer.pri)
 
-QT       += core gui widgets network
+QT       += core gui widgets network dbus
 
 TEMPLATE = app
 
@@ -64,6 +65,7 @@ SOURCES +=\
     mainwindow_actions.cpp \
     mainwindow_usbvolume.cpp \
     simpleview.cpp \
+    nowplaying.cpp \
     usbvolume.c
 
 mac: SOURCES += hidmac.c
@@ -81,6 +83,7 @@ HEADERS +=\
     bitstream.h \
     usbvolume.h \
     simpleview.h \
+    nowplaying.h \
     rdstext.h \
     requestmapper.h \
     controller/txcontroller.h \

@@ -2272,5 +2272,33 @@ and cap the peaks. Details in Advanced mode, Sound tab.</source>
             <translation>Compresseur et limiteur intégrés à l'émetteur : ils régularisent le volume
 et écrêtent les pointes. Réglages détaillés : Mode avancé, onglet Son.</translation>
         </message>
+        <message>
+            <source>Show the track a media player is playing</source>
+            <translation>Afficher le morceau joué par un lecteur</translation>
+        </message>
+        <message>
+            <source>VLC, Chrome, Firefox, Spotify, Rhythmbox... (MPRIS)</source>
+            <translation>VLC, Chrome, Firefox, Spotify, Rhythmbox… (MPRIS)</translation>
+        </message>
+        <message>
+            <source>Text when nothing is playing</source>
+            <translation>Texte quand rien ne joue</translation>
+        </message>
+        <message>
+            <source>The first player that is playing</source>
+            <translation>Le premier lecteur qui joue</translation>
+        </message>
+        <message>
+            <source>Now playing in %1: %2</source>
+            <translation>En cours dans %1 : %2</translation>
+        </message>
+        <message>
+            <source>No player is playing: the text above is sent.</source>
+            <translation>Aucun lecteur ne joue : le texte ci-dessus est envoyé.</translation>
+        </message>
+        <message>
+            <source>%1 is not playing: the text above is sent.</source>
+            <translation>%1 ne joue pas : le texte ci-dessus est envoyé.</translation>
+        </message>
     </context>
 </TS>

@@ -24,6 +24,8 @@
 #include <QTimer>
 #include <QDoubleSpinBox>
 
+#include "nowplaying.h"
+
 class MainWindow;
 class QFrame;
 class QWidget;
@@ -31,6 +33,7 @@ class QLabel;
 class QPushButton;
 class QLineEdit;
 class QComboBox;
+class QCheckBox;
 class QProgressBar;
 class QButtonGroup;
 class QLayout;
@@ -85,6 +88,9 @@ private slots:
     void saveToEeprom();
     void inputLevelChanged(int dB);
     void dspPicked(int index);
+    void rtAutoToggled(bool on);
+    void rtPlayerPicked(int index);
+    void pollPlayers();
 
 private:
     enum State { Disconnected, Stopped, Silent, OnAir };
@@ -113,12 +119,22 @@ private:
     QLabel *soundTitle, *levelTitle, *levelValue, *modTitle, *modValue, *levelWarning;
     QLabel *dspLabel;
     QComboBox *dspCombo;
-    int inputLevel;
-    bool onAirNow;
+    int inputLevel = -70;
+    bool onAirNow = false;
     QProgressBar *levelBar, *modBar;
     QLabel *rdsTitle, *psLabel, *psCount, *psHint, *rtLabel, *rtCount, *rtHint, *ptyLabel;
     QLineEdit *psEdit, *rtEdit;
     QComboBox *ptyCombo;
+    /* RadioText from the track a media player is playing (MPRIS) */
+    QCheckBox *rtAutoCheck;
+    QComboBox *rtPlayerCombo;
+    QLabel *rtAutoInfo;
+    NowPlaying nowPlaying;
+    QTimer playerTimer;
+    bool rtAuto = false;
+    QString rtPlayer;     /* id of the chosen player (MediaPlayer::id), empty: any */
+    QString rtPlayerName; /* its name, to keep showing it while it is closed */
+    QString rtDefault;    /* sent when nothing is playing */
     QLabel *footerDot, *footerText;
     QPushButton *saveButton;
 
@@ -131,6 +147,9 @@ private:
     void applyVisibility();
     static void setLayoutVisible(QLayout *layout, bool visible);
     void markDirty();
+    void setRtAuto(bool on);
+    void sendRt(const QString &text);
+    void saveRtAutoSettings();
 };
 
 #endif // SIMPLEVIEW_H

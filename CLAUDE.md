@@ -58,6 +58,12 @@ English.
 - On connect, `RedrawEverything()` reads the EEPROM, then the running
   config. The chip cannot report the PS/RT it is sending: what the app
   shows for them comes from the EEPROM image.
+- RadioText from a media player: `nowplaying.cpp` reads MPRIS over D-Bus
+  (polled every 2 s by `SimpleView::pollPlayers()`). Match players by
+  `MediaPlayer::id` (bus name without `.instanceNNN`), never by their
+  identity, which some translate ("Lecteur multimédia VLC"). VLC owns two
+  bus names per player; web radios put the track in `vlc:nowplaying`, the
+  station in `xesam:title`.
 
 ## Hardware quirks (measured on the Vast HiFi-FMT, don't re-measure)
 
@@ -90,6 +96,9 @@ English.
   ("FmStick – Contrôle de l'émetteur" in French). Never drive the screen
   while the user is using it: clicks land in whatever window is in front.
   The first click after launch only focuses the window.
+- Media players: `cvlc --aout=dummy --vout=dummy --control dbus <file>`
+  plays without sound on air and exposes MPRIS. A web radio can be faked
+  with a small Python server sending ICY metadata (`icy-metaint`).
 - Web UI: `curl -u <login>:<password> http://127.0.0.1:8080/api/state`.
   For screenshots, use headless Chrome with a throwaway `--user-data-dir`
   and a local relay that adds the Basic auth header, not the user's Chrome.
