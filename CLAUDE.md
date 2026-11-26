@@ -22,6 +22,17 @@ English.
 - Only one instance runs (QtSingleApplication): kill the running one
   (`pkill -x fmstick`) before launching a new build.
 
+## Packages and releases
+
+- `debian/` builds a Debian 12 package (Qt6, out of tree in `build-deb/`,
+  udev rule from `debian/fmstick.udev`). The version comes from
+  `debian/changelog` and `VER` in `fmstick.pro`: bump both.
+- `.github/workflows/packages.yml` builds and test-installs the amd64 and
+  arm64 packages on native GitHub runners (debian:bookworm container) for
+  each push and PR; pushing a tag `v*` also creates the GitHub release with
+  both `.deb`. Tags and releases are public: only on the user's request.
+- The local disk is small: don't build packages in Docker here, use CI.
+
 ## Translations
 
 - `translations/fmstick_fr.ts` (also `ru`, `uk`). Update with

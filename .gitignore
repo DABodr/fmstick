@@ -1,2 +1,8 @@
 build-qt6*/
 translations/*.qm
+build-deb/
+debian/fmstick/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
