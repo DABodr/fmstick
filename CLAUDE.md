@@ -85,6 +85,15 @@ English.
   RPS (Si4712/13 only). No "find a free frequency".
 - RDS text must go through `toRdsCharset()` (`rdstext.h`): receivers use the
   RDS character set, not UTF-8.
+- TEF6686 receivers (PE5PVB firmware, source on GitHub) with "RT buffering"
+  only show a RadioText when the A/B flag toggles again, i.e. when the next
+  text starts. So each new text is sent again 6 s later with the flag
+  toggled (`MainWindow::rtSent()`), and the flag of the text on air is kept
+  across restarts (`onair.h`). Texts end with 0x0D: without it, they show
+  all 64 characters, padding and reception errors included.
+- Changing the power briefly drops the carrier: receivers may lose RDS
+  until they are retuned. Testing into a 50 ohm dummy load gives a weak,
+  unstable signal (~25 dBuV on a nearby receiver) and RDS errors.
 
 ## Testing on the real device
 
