@@ -9,6 +9,7 @@
  * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-25 by Aurel: EEPROM write without dialogs, for the web UI.
+ * Modified 2026-11-26 by Aurel: an EEPROM write from any button clears the "not kept" mark.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -512,6 +513,7 @@ bool MainWindow::writeEEPROMConfig()
         return false;
     }
     qDebug() << __FUNCTION__ << "saved!";
+    simpleView->markClean();
     return true;
 }
 

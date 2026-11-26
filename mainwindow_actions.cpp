@@ -3,11 +3,13 @@
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-25 by Aurel: web UI address shown again after a language change.
  * Modified 2026-11-26 by Aurel: a language change keeps the contents of fields and lists.
+ * Modified 2026-11-26 by Aurel: the on/off buttons and menus apply without live editing.
  */
 #include "mainwindow.h"
 #include "querier.h"
 #include "ui_mainwindow.h"
 
+#include "simpleview.h"
 #include "fmtx.h"
 #include "logging.h"
 
@@ -168,8 +170,12 @@ void MainWindow::SetFrontendReset() {
 void MainWindow::StationButtonClicked()
 {
     qDebug() << __FUNCTION__;
+    /* An explicit action (menus, tray icon, big button, web UI): apply it
+       whatever "Live editing" says, or the screen says "stopped" while the
+       transmitter keeps sending. */
     bool is_checked = ui->checkBox_transmitter_enabled->isChecked();
-    ui->checkBox_transmitter_enabled->setChecked(!is_checked);
+    applyLive([&]() { ui->checkBox_transmitter_enabled->setChecked(!is_checked); });
+    simpleView->markDirty();
 }
 
 

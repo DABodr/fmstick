@@ -62,6 +62,8 @@ public:
     void setMiniMode(bool mini);
     /* The device was (re)read or its config saved to EEPROM. */
     void markClean();
+    /* A setting changed that is not in the EEPROM yet. */
+    void markDirty();
 
     /* Web UI: the screen's state as JSON (any thread), and a change to
        apply (GUI thread only: the web server queues it here). */
@@ -149,7 +151,6 @@ private:
     State currentState(uint32_t *effectiveDeviation, int *usbVolume, int *usbMax) const;
     void applyVisibility();
     static void setLayoutVisible(QLayout *layout, bool visible);
-    void markDirty();
     void setRtAuto(bool on);
     void sendRt(const QString &text);
     void saveRtAutoSettings();

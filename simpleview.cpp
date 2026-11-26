@@ -799,8 +799,7 @@ void SimpleView::powerPicked(int id)
 
 void SimpleView::toggleTransmission()
 {
-    mw->applyLive([&]() { mw->StationButtonClicked(); });
-    markDirty();
+    mw->StationButtonClicked();   /* applies live, marks the change */
 }
 
 void SimpleView::psEdited(const QString &text)
