@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: empty RadioText sent as spaces, A/B flag toggled per message.
  * Modified 2026-11-26 by Aurel: RadioText ended by a carriage return, only the segments needed.
  * Modified 2026-11-26 by Aurel: the A/B flag of the RadioText on air can be read and set.
+ * Modified 2026-11-26 by Aurel: RDS clock time sent as UTC with the local offset.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2114,16 +2115,28 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSendTimeStamp()
     uint8_t buff[16];
     uint32_t MJD;
     int y, m, d, k;
-    struct tm  *ltm;
+    struct tm utc, local, *ltm = &utc;
     int8_t offset;
-    struct timezone tz;
-    struct timeval tv;
-    gettimeofday( &tv, &tz);
+    long gmtoff = 0;
+    time_t now = time(NULL);
 
     logwrite(LOG_DUMP, "FMTX: %s", __FUNCTION__);
 
-    ltm=localtime(&tv.tv_sec);
-    offset = tz.tz_minuteswest / 30;
+    /* RDS clock time (EN 50067, 3.1.5.6): the UTC date and time, plus the
+       local offset in half hours. The timezone of gettimeofday() is always
+       0 on Linux, so the local time used to be sent as UTC with no offset:
+       receivers applying their own timezone were one or two hours off. */
+#ifdef WIN32
+    utc = *gmtime(&now);
+    local = *localtime(&now);
+#else
+    gmtime_r(&now, &utc);
+    localtime_r(&now, &local);
+#endif
+#if defined(__linux__) || defined(__APPLE__)
+    gmtoff = local.tm_gmtoff;               /* seconds east of UTC, summer time included */
+#endif
+    offset = (int8_t)(labs(gmtoff) / 1800);
 
     y = ltm->tm_year;
     m = ltm->tm_mon + 1;
@@ -2134,14 +2147,11 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSendTimeStamp()
 
     MJD = 14956 + d + ((int) ((y - k) * 365.25)) + ((int) ((m + 1 + k * 12) * 30.6001));
 
-    /* this is reversed because we have negative value for eastern of GMT */
-    if (offset > 0)
-        offset = (abs(offset) & 0x1F) | 0x20;
-    else
-        offset = abs(offset) & 0x1F;
+    /* bit 5 is the sign: set for west of UTC */
+    offset = (offset & 0x1F) | (gmtoff < 0 ? 0x20 : 0);
 
     /* send timestamp */
-    logwrite(LOG_DEBUG, "RDS: local timestamp MJD:%d, %d:%d %s%d/2", MJD, ltm->tm_hour, ltm->tm_min, (offset & 0x20)?"-":"+", offset);
+    logwrite(LOG_DEBUG, "RDS: clock time MJD:%d, %02d:%02d UTC %s%d/2 h", MJD, ltm->tm_hour, ltm->tm_min, (offset & 0x20)?"-":"+", offset & 0x1F);
     if(fmtxIoAppCommand(TX_RDS_BUFF, buff, 7, TX_RDS_BUFF_IN_FIFO|TX_RDS_BUFF_IN_LDBUFF, 0x40, MJD >> 15, MJD >> 7, MJD << 1|((ltm->tm_hour & 0x1F)>> 4), ((ltm->tm_hour & 0x1F)<< 4)|((ltm->tm_min & 0x3F)>> 2), ((ltm->tm_min & 0x3F)<< 6)|offset) != FMTX_MODE_OK)
         fmtxCmdStatus=FMTX_MODE_NONE;
     return (fmtxCmdStatus);

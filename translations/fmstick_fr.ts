@@ -2251,10 +2251,6 @@ au maximum, c'est la déviation réglée dans l'onglet Émetteur ;
             <translation>Aucune modification depuis la lecture de l'émetteur</translation>
         </message>
         <message>
-            <source>Custom: %1 dBµV</source>
-            <translation>Personnalisée : %1 dBµV</translation>
-        </message>
-        <message>
             <source>More than 8 characters: receivers show the name in parts of 8.</source>
             <translation>Plus de 8 caractères : les récepteurs affichent le nom par morceaux de 8.</translation>
         </message>
@@ -2303,6 +2299,26 @@ et écrêtent les pointes. Réglages détaillés : Mode avancé, onglet Son.</t
         <message>
             <source>%1 is playing but sends no title: the text above is sent.</source>
             <translation>%1 joue mais n'envoie pas de titre : le texte ci-dessus est envoyé.</translation>
+        </message>
+        <message>
+            <source>Estimated power into 50 Ω. The chip sets an RF voltage: the power actually delivered depends on the board and the antenna.</source>
+            <translation>Puissance estimée sous 50 Ω. La puce règle une tension HF : la puissance réellement fournie dépend de la carte et de l'antenne.</translation>
+        </message>
+        <message>
+            <source>Custom: %1 dBµV · ≈ %2</source>
+            <translation>Personnalisée : %1 dBµV · ≈ %2</translation>
+        </message>
+        <message>
+            <source>%1 dBµV · ≈ %2</source>
+            <translation>%1 dBµV · ≈ %2</translation>
+        </message>
+        <message>
+            <source>Send the time</source>
+            <translation>Envoyer l'heure</translation>
+        </message>
+        <message>
+            <source>RDS clock time, at the start of each minute: UTC with the local offset, summer time included. Receivers can set their clock from it.</source>
+            <translation>Heure RDS, au début de chaque minute : heure UTC avec le décalage local, heure d'été comprise. Les récepteurs peuvent régler leur horloge dessus.</translation>
         </message>
     </context>
 </TS>

@@ -14,6 +14,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "usbvolume.h"
+#include "rfpower.h"
 
 #include <QtWidgets>
 #include <QJsonArray>
@@ -157,6 +158,10 @@ void SimpleView::install()
         w->setStyleSheet(STYLE);
 
     ui->tabWidget->setStyleSheet(ADVANCED_STYLE);
+    /* the power as an estimate in mW, next to the dBuV field */
+    advancedPowerMw = new QLabel();
+    advancedPowerMw->setStyleSheet("color: #5B6470;");
+    ui->horizontalLayout_15->addWidget(advancedPowerMw);
     ui->tabWidget->setDocumentMode(false);
 
     QVBoxLayout *root = ui->verticalLayout_49;
@@ -435,6 +440,9 @@ void SimpleView::buildBody()
     ptyCombo->setModel(ui->comboBox_rds_pty->model());   /* same list as the RDS tab */
     ptyLabel->setBuddy(ptyCombo);
     c->addWidget(ptyCombo);
+    clockCheck = new QCheckBox();
+    c->addWidget(clockCheck);
+    connect(clockCheck, SIGNAL(toggled(bool)), this, SLOT(clockToggled(bool)));
     c->addStretch(1);
     connect(psEdit, SIGNAL(textEdited(QString)), this, SLOT(psEdited(QString)));
     connect(rtEdit, SIGNAL(editingFinished()), this, SLOT(rtEdited()));
@@ -478,6 +486,10 @@ void SimpleView::retranslate()
     powerButtons[1]->setText(tr("Medium"));
     powerButtons[2]->setText(tr("Maximum"));
     powerNote->setText(tr("At high power, check what the regulations of your country allow."));
+    QString powerHint = tr("Estimated power into 50 Ω. The chip sets an RF voltage: the power actually "
+                           "delivered depends on the board and the antenna.");
+    powerDetail->setToolTip(powerHint);
+    advancedPowerMw->setToolTip(powerHint);
     soundTitle->setText(tr("Sound"));
     levelTitle->setText(tr("Input level"));
     modTitle->setText(tr("Modulation"));
@@ -492,6 +504,9 @@ void SimpleView::retranslate()
     rtAutoCheck->setToolTip(tr("VLC, Chrome, Firefox, Spotify, Rhythmbox... (MPRIS)"));
     rtLabel->setText(rtAuto ? tr("Text when nothing is playing") : tr("Radio text"));
     ptyLabel->setText(tr("Programme type"));
+    clockCheck->setText(tr("Send the time"));
+    clockCheck->setToolTip(tr("RDS clock time, at the start of each minute: UTC with the local offset, "
+                              "summer time included. Receivers can set their clock from it."));
     saveButton->setText(tr("Keep at startup"));
     saveButton->setToolTip(tr("Write these settings to the transmitter's memory (EEPROM)."));
     syncFromUi();
@@ -658,6 +673,7 @@ void SimpleView::refresh()
     web["powerPresets"] = QJsonArray{ POWER_PRESETS[0], POWER_PRESETS[1], POWER_PRESETS[2] };
     web["powerLabels"] = QJsonArray{ powerButtons[0]->text(), powerButtons[1]->text(), powerButtons[2]->text() };
     web["powerDetail"] = powerDetail->text();
+    web["powerHint"] = powerDetail->toolTip();
     web["onAir"] = onAir;
     web["txLabel"] = txButton->text();
     web["inputLevel"] = state == Disconnected ? QJsonValue() : QJsonValue(inputLevel);
@@ -680,6 +696,8 @@ void SimpleView::refresh()
                                      { "players", players }, { "info", rtAuto ? rtAutoInfo->text() : QString() } };
     }
     web["dirty"] = dirty;
+    web["clock"] = QJsonObject{ { "enabled", clockCheck->isChecked() }, { "label", clockCheck->text() },
+                                { "hint", clockCheck->toolTip() } };
     {
         QMutexLocker lock(&webStateMutex);
         webStateJson = QJsonDocument(web).toJson(QJsonDocument::Compact);
@@ -714,8 +732,9 @@ void SimpleView::syncFromUi()
         if (power == POWER_PRESETS[i])
             preset = i;
     }
-    powerDetail->setText(preset < 0 ? tr("Custom: %1 dBµV").arg(power)
-                                    : QString::fromUtf8("%1 dBµV").arg(power));
+    powerDetail->setText(preset < 0 ? tr("Custom: %1 dBµV · ≈ %2").arg(power).arg(rfPowerText(power))
+                                    : tr("%1 dBµV · ≈ %2").arg(power).arg(rfPowerText(power)));
+    advancedPowerMw->setText(QString::fromUtf8("≈ ") + rfPowerText(power));
 
     QString ps = ui->lineEdit_station_id->text();
     if (!psEdit->hasFocus() && psEdit->text() != ps)
@@ -732,6 +751,10 @@ void SimpleView::syncFromUi()
     if (!rtEdit->hasFocus() && rtEdit->text() != rt)
         rtEdit->setText(rt);
     rtCount->setText(QString("%1 / 64").arg(rtEdit->text().length()));
+
+    clockCheck->blockSignals(true);
+    clockCheck->setChecked(ui->checkBox_rds_time->isChecked() && ui->checkBox_rds_fifo->isChecked());
+    clockCheck->blockSignals(false);
 
     if (dspCombo->currentIndex() != ui->comboBox_audioPreset->currentIndex())
         dspCombo->setCurrentIndex(ui->comboBox_audioPreset->currentIndex());
@@ -864,6 +887,8 @@ void SimpleView::webSet(const QString &field, const QString &value)
         int i = value.toInt();
         if (i >= 0 && i < dspCombo->count())
             dspPicked(i);
+    } else if (field == "clock") {
+        clockCheck->setChecked(value == "on");      /* -> clockToggled() */
     } else if (field == "rtAuto") {
         rtAutoCheck->setChecked(value == "on");     /* -> rtAutoToggled() */
     } else if (field == "rtPlayer") {
@@ -879,6 +904,12 @@ void SimpleView::webSet(const QString &field, const QString &value)
             markClean();
     }
     syncFromUi();
+}
+
+void SimpleView::clockToggled(bool on)
+{
+    mw->setRdsClock(on);
+    markDirty();
 }
 
 /* ------------------------------------------------- RT from a media player */

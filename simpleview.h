@@ -91,6 +91,7 @@ private slots:
     void rtAutoToggled(bool on);
     void rtPlayerPicked(int index);
     void pollPlayers();
+    void clockToggled(bool on);
 
 private:
     enum State { Disconnected, Stopped, Silent, OnAir };
@@ -113,6 +114,7 @@ private:
     QPushButton *freqDown, *freqUp;
     FreqSpinBox *freq;
     QLabel *powerTitle, *powerDetail, *powerNote;
+    QLabel *advancedPowerMw;   /* next to the power field of the Transmitter tab */
     QButtonGroup *powerGroup;
     QPushButton *powerButtons[3];
     QPushButton *txButton;
@@ -125,6 +127,7 @@ private:
     QLabel *rdsTitle, *psLabel, *psCount, *psHint, *rtLabel, *rtCount, *rtHint, *ptyLabel;
     QLineEdit *psEdit, *rtEdit;
     QComboBox *ptyCombo;
+    QCheckBox *clockCheck;    /* RDS clock time */
     /* RadioText from the track a media player is playing (MPRIS) */
     QCheckBox *rtAutoCheck;
     QComboBox *rtPlayerCombo;

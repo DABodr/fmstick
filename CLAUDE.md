@@ -55,7 +55,11 @@ English.
   `/api/set` (POST + `X-FmStick: 1` header) queues
   `SimpleView::webSet()` to the GUI thread. HTTP handlers run in their own
   threads: never touch widgets from them. Old pages live under `/classic`.
-- `Querier`: 1 s timer that polls the device (ASQ level, RT file, RDS time).
+- `Querier`: 1 s timer that polls the device (ASQ level, RT file).
+- RDS clock time (group 4A, needs the RDS FIFO): `MainWindow::sendRdsClock()`
+  sends UTC plus the local offset at the start of each minute, on a
+  `Qt::PreciseTimer` (a coarse one fires up to 3 s early, i.e. the minute
+  before). Check it on air with redsea (`clock_time`).
   `HidAccessMutex` serialises device access inside the app.
 - On connect, `RedrawEverything()` reads the EEPROM, then the running
   config. The chip cannot report the PS/RT it is sending, so the app shows

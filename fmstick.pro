@@ -8,6 +8,7 @@
 # Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
 # Modified 2026-11-26 by Aurel: RadioText from a media player (MPRIS, Qt D-Bus).
 # Modified 2026-11-26 by Aurel: PS/RT on air remembered across restarts.
+# Modified 2026-11-26 by Aurel: transmit power also shown as an estimate in mW.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
@@ -86,6 +87,7 @@ HEADERS +=\
     simpleview.h \
     nowplaying.h \
     onair.h \
+    rfpower.h \
     rdstext.h \
     requestmapper.h \
     controller/txcontroller.h \

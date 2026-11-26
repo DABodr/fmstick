@@ -4,6 +4,7 @@
  * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
  * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
  * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
+ * Modified 2026-11-26 by Aurel: RDS clock time sent at each minute, switch for the simple screen.
  */
 
 #include "mainwindow.h"
@@ -373,21 +374,55 @@ void MainWindow::toggleRDSfifo(int value)
     SetRDSFIFO(ui->spinBox_rds_fifo_sz->value());
 }
 
+/* RDS clock time is now sent at the start of each minute (sendRdsClock()):
+   RDS carries no seconds, and receivers set their clock to hh:mm:00 when
+   they get it. The former fixed interval is no longer used. */
 void MainWindow::SetRDSTime(int iVal)
 {
-    if(!liveEditingEnabled)
-        return;
-    querier->rdsInterval = iVal * 1000;
+    Q_UNUSED(iVal);
 }
 
 void MainWindow::toggleRDStime(int value)
 {
-    ui->frame_rds_time->setVisible(value);
-    if(value) {
-        querier->rdsInterval = ui->spinBox_rds_time_int->value() * 1000;
-    } else {
-        querier->rdsInterval=0;
+    Q_UNUSED(value);
+    ui->frame_rds_time->setVisible(false);    /* the interval: unused */
+    querier->rdsInterval = 0;
+}
+
+void MainWindow::scheduleRdsClock()
+{
+    qint64 now = QDateTime::currentMSecsSinceEpoch();
+    rdsClockTimer.start(int(60000 - now % 60000) + 50);   /* just after hh:mm:00 */
+}
+
+void MainWindow::sendRdsClock()
+{
+    /* never send the minute that is about to end: a timer firing a little
+       early would set receivers almost a minute late */
+    if(QDateTime::currentMSecsSinceEpoch() % 60000 > 30000) {
+        scheduleRdsClock();
+        return;
     }
+    scheduleRdsClock();
+    if(!deviceStatus || !ui->checkBox_rds_time->isChecked() || !ui->checkBox_rds_fifo->isChecked()
+            || fmtxCmdSpecial != FMTX_SPECIAL_FRONTEND)
+        return;
+    querier->HidAccessMutex.lock();
+    if(fmtxRDSSendTimeStamp() != FMTX_MODE_OK)
+        qDebug() << "Can't send the RDS clock time";
+    querier->HidAccessMutex.unlock();
+}
+
+/* The simple screen and the web UI: the time needs the RDS FIFO, turn it on. */
+void MainWindow::setRdsClock(bool on)
+{
+    applyLive([&]() {
+        if(on && !ui->checkBox_rds_fifo->isChecked())
+            ui->checkBox_rds_fifo->setChecked(true);    /* -> toggleRDSfifo(), SetRDSFIFO() */
+        if(on && ui->spinBox_rds_fifo_sz->value() < 4)
+            ui->spinBox_rds_fifo_sz->setValue(4);       /* room for one 4A group */
+        ui->checkBox_rds_time->setChecked(on);
+    });
 }
 
 void MainWindow::SetRDSPSNum(int iVal)
