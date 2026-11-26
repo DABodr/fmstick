@@ -24,13 +24,15 @@ English.
 
 ## Packages and releases
 
-- `debian/` builds a Debian 12 package (Qt6, out of tree in `build-deb/`,
+- `debian/` builds a Debian 12/13 package (Qt6, out of tree in `build-deb/`,
   udev rule from `debian/fmstick.udev`). The version comes from
   `debian/changelog` and `VER` in `fmstick.pro`: bump both.
-- `.github/workflows/packages.yml` builds and test-installs the amd64 and
-  arm64 packages on native GitHub runners (debian:bookworm container) for
-  each push and PR; pushing a tag `v*` also creates the GitHub release with
-  both `.deb`. Tags and releases are public: only on the user's request.
+- `.github/workflows/packages.yml` builds and test-installs the packages
+  for Debian 12 and 13 (version suffix `+deb12`/`+deb13`; the user's Pi
+  runs trixie), amd64 and arm64, on native GitHub runners for each push
+  and PR; pushing a tag `v*` also creates the GitHub release; running it
+  by hand with a tag adds the packages to that release. The repo's `gh`
+  is old: no `--json` on `gh pr checks`. Tags and releases are public: only on the user's request.
 - The local disk is small: don't build packages in Docker here, use CI.
 
 ## Translations
