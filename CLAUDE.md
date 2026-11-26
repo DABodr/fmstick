@@ -33,7 +33,9 @@ English.
 - Strings set in code must be re-set on `QEvent::LanguageChange` /
   `MainWindow::retranslateUi()`: the saved language is applied at startup,
   after the widgets are built, and `ui->retranslateUi()` resets every text
-  of the `.ui`.
+  of the `.ui`, field contents included. `MainWindow::retranslateUi()`
+  saves and restores every line edit and combo box (signals blocked)
+  around it: keep it that way, or PS/PI/login get reset at each startup.
 
 ## Architecture
 

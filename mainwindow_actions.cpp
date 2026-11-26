@@ -2,6 +2,7 @@
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-25 by Aurel: web UI address shown again after a language change.
+ * Modified 2026-11-26 by Aurel: a language change keeps the contents of fields and lists.
  */
 #include "mainwindow.h"
 #include "querier.h"
@@ -16,39 +17,40 @@
  ******************************************************************/
 void MainWindow::retranslateUi()
 {
-    int backup1, backup2, backup3, backup4, backup5, backup6, backup7, backup8, backup9, backup10, backup11;
-    //Worakaround for: QTBUG-3863
-    backup1 = ui->comboBox_audioCompressorReleasetime->currentIndex();
-    backup2 = ui->comboBox_audioPreset->currentIndex();
-    backup3 = ui->comboBox_rds_ps_percentage->currentIndex();
-    backup4 = ui->comboBox_rds_pty->currentIndex();
-    backup5 = ui->comboBox_rds_content1_type->currentIndex();
-    backup6 = ui->comboBox_rds_content2_type->currentIndex();
-    backup7 = ui->comboBox_rds_content3_type->currentIndex();
-    backup8 = ui->comboBox_rds_content4_type->currentIndex();
-    backup9 = ui->comboBox_transmitter_preemph->currentIndex();
-    backup10 = ui->comboBox_audio_input_level->currentIndex();
-    backup11 = ui->comboBox_audio_input_mute->currentIndex();
+    /* ui->retranslateUi() resets every translatable text of the .ui, the
+       contents of line edits included (PS fields emptied, PI back to
+       "0000", web login back to "Admin"), and refills the combo boxes,
+       which loses their selection (QTBUG-3863). The language is applied at
+       each startup, so keep what the user has, and block the signals
+       meanwhile: no intermediate value may reach the device or the config. */
+    QHash<QLineEdit *, QString> texts;
+    QHash<QComboBox *, int> indexes;
+    QHash<QObject *, bool> blocked;
+    const QList<QLineEdit *> edits = findChildren<QLineEdit *>();
+    for (QLineEdit *e : edits) {
+        /* the editors inside spin boxes and combo boxes belong to them */
+        if (qobject_cast<QAbstractSpinBox *>(e->parent()) || qobject_cast<QComboBox *>(e->parent()))
+            continue;
+        texts.insert(e, e->text());
+        blocked.insert(e, e->blockSignals(true));
+    }
+    const QList<QComboBox *> combos = findChildren<QComboBox *>();
+    for (QComboBox *c : combos) {
+        indexes.insert(c, c->currentIndex());
+        blocked.insert(c, c->blockSignals(true));
+    }
 
     ui->retranslateUi(this);
+
+    for (auto it = texts.constBegin(); it != texts.constEnd(); ++it)
+        it.key()->setText(it.value());
+    for (auto it = indexes.constBegin(); it != indexes.constEnd(); ++it)
+        it.key()->setCurrentIndex(it.value());
+    for (auto it = blocked.constBegin(); it != blocked.constEnd(); ++it)
+        it.key()->blockSignals(it.value());
+
     retranslateUsbVolumeUi();
     showHTTPListenerAddress();
-
-    ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
-    ui->comboBox_audioCompressorReleasetime->setCurrentIndex(backup1);
-    ui->comboBox_audioPreset->setCurrentIndex(backup2);
-    ui->comboBox_rds_ps_percentage->setCurrentIndex(backup3);
-    ui->comboBox_rds_pty->setCurrentIndex(backup4);
-    ui->comboBox_rds_content1_type->setCurrentIndex(backup5);
-    ui->comboBox_rds_content2_type->setCurrentIndex(backup6);
-    ui->comboBox_rds_content3_type->setCurrentIndex(backup7);
-    ui->comboBox_rds_content4_type->setCurrentIndex(backup8);
-    ui->comboBox_transmitter_preemph->setCurrentIndex(backup9);
-    ui->comboBox_audio_input_level->setCurrentIndex(backup10);
-    ui->comboBox_audio_input_mute->setCurrentIndex(backup11);
-
-    //menu->setTitle(tr("File"));
-    //fileAction->setText(tr("First action"));
 }
 
 void MainWindow::applyLive(const std::function<void()> &change)
