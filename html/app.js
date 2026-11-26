@@ -87,6 +87,13 @@ function setValue(input, value) {
   if (document.activeElement !== input && input.value !== String(value)) input.value = value;
 }
 
+/* the frequency field as wide as its value ("101.1", "101.05"): a fixed
+   width cut the last digit on phones */
+function fitFreq() {
+  const f = $('freq');
+  f.style.width = (Math.max(f.value.length, 3) + 0.4) + 'ch';
+}
+
 function fillSelect(select, list) {
   const items = list.items || [];
   const same = select.options.length === items.length && items.every((txt, i) => select.options[i].text === txt);
@@ -116,6 +123,7 @@ function render() {
   const freq = $('freq');
   freq.min = s.freqMin; freq.max = s.freqMax;
   setValue(freq, (+s.freq).toFixed(Math.abs(s.freq * 10 - Math.round(s.freq * 10)) < 1e-6 ? 1 : 2));
+  fitFreq();
 
   const power = $('power');
   if (power.children.length !== s.powerPresets.length) {
@@ -206,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('freq-down').addEventListener('click', () => send('freqStep', -1));
   $('freq-up').addEventListener('click', () => send('freqStep', 1));
   onCommit($('freq'), 'freq');
+  $('freq').addEventListener('input', fitFreq);
   $('tx').addEventListener('click', () => send('tx', state && state.onAir ? 'off' : 'on'));
   $('banner-action').addEventListener('click', () => send('fix'));
   $('dsp').addEventListener('change', (e) => send('dsp', e.target.value));
