@@ -2,6 +2,7 @@
  * Part of FmStick, see LICENSE.txt.
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: release the USB lock when setting the power fails.
+ * Modified 2026-11-26 by Aurel: an out-of-band frequency read on connect is not shown.
  */
 
 #include "mainwindow.h"
@@ -64,7 +65,23 @@ void MainWindow::DisplayTransmitterEditor(void)
     toggleTransmitEnabled(power>0);
     SetTransmitIcon(power>0 ? ICON_TX : ICON_NOTX);
 
-    ui->doubleSpinBox_transmitter_freq->setValue(freq);
+    /* After a replug the chip restarts from its EEPROM, but the firmware may
+       not know the frequency yet: a read at the wrong moment gave 0, shown as
+       76 MHz while 107.4 was on air (and "Keep at startup" would have saved
+       it). Never show an out-of-band value: take the EEPROM's, which the
+       chip started with, and read the device again shortly. */
+    if(fmtxCmdSpecial == FMTX_SPECIAL_FRONTEND && (freq < 76.0 || freq > 108.0)) {
+        double eepromFreq = 0, eepromCap = 0;
+        uint8_t eepromPower = 0;
+        fmtxCmdSpecial = FMTX_SPECIAL_EEPROM;
+        int ok = fmtxTransmitterGetTuneStatus(&eepromFreq, &eepromPower, &eepromCap);
+        fmtxCmdSpecial = FMTX_SPECIAL_FRONTEND;
+        qDebug() << "Frequency read out of band:" << freq << "MHz, EEPROM:" << eepromFreq << "MHz";
+        freq = (ok == FMTX_MODE_OK && eepromFreq >= 76.0 && eepromFreq <= 108.0) ? eepromFreq : 0;
+        QTimer::singleShot(4000, this, [this]() { recheckTuneStatus(1); });
+    }
+    if(freq >= 76.0 && freq <= 108.0)
+        ui->doubleSpinBox_transmitter_freq->setValue(freq);
 
     ui->spinBox_transmitter_power->setValue(power);
 
@@ -79,6 +96,30 @@ void MainWindow::DisplayTransmitterEditor(void)
 
 display_transmitter_err:
     qDebug() << "Error while reading transmitter info";
+}
+
+/* Second read of the frequency, see DisplayTransmitterEditor(). */
+void MainWindow::recheckTuneStatus(int attempt)
+{
+    double freq = 0, rfcap = 0;
+    uint8_t power = 0;
+    if(!deviceStatus || fmtxCmdSpecial != FMTX_SPECIAL_FRONTEND)
+        return;
+    querier->HidAccessMutex.lock();
+    int ret = fmtxTransmitterGetTuneStatus(&freq, &power, &rfcap);
+    querier->HidAccessMutex.unlock();
+    qDebug() << "Frequency read again:" << freq << "MHz, attempt" << attempt;
+    if(ret != FMTX_MODE_OK || freq < 76.0 || freq > 108.0) {
+        if(attempt < 3)
+            QTimer::singleShot(4000, this, [this, attempt]() { recheckTuneStatus(attempt + 1); });
+        return;
+    }
+    if(qAbs(freq - ui->doubleSpinBox_transmitter_freq->value()) > 0.001) {
+        int live = liveEditingEnabled;
+        liveEditingEnabled = false;     /* what is on air: nothing to send */
+        ui->doubleSpinBox_transmitter_freq->setValue(freq);
+        liveEditingEnabled = live;
+    }
 }
 
 void MainWindow::ConfigureTransmitterEditor(void)

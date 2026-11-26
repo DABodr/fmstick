@@ -114,6 +114,13 @@ English.
   plays without sound on air and exposes MPRIS. A web radio can be faked
   with a small Python server sending ICY metadata (`icy-metaint`).
 - Web UI: `curl -u <login>:<password> http://127.0.0.1:8080/api/state`.
+- What is on air, without asking the user: an RTL-SDR dongle (DVB-T driver
+  blacklisted in `/etc/modprobe.d/blacklist-rtl-sdr.conf`) and redsea
+  (built into `~/.local/bin`):
+  `timeout 25 sh -c 'rtl_fm -M fm -l 0 -A std -p 0 -s 171k -g 20 -F 9 -f 107.4M | ~/.local/bin/redsea -r 171k -E' > rds.json`
+  gives one JSON line per RDS group: PI, PS, RadioText, PTY, group types
+  and the block error rate (`bler`). Keep the dongle away from the
+  transmitter, or lower the power, or it saturates.
   For screenshots, use headless Chrome with a throwaway `--user-data-dir`
   and a local relay that adds the Basic auth header, not the user's Chrome.
 
