@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: USB volume handling for Vast HiFi-FMT.
  * Modified 2026-11-25 by Aurel: remember the simple/advanced mode.
  * Modified 2026-11-26 by Aurel: factory defaults: "FM STICK", "FM RDS transmitter", 100.0 MHz.
+ * Modified 2026-11-26 by Aurel: default audio deviation 66.25 kHz, for 75 kHz in total.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -255,7 +256,8 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
 
     reader->beginGroup("transmitter");
     ui->comboBox_transmitter_preemph->setCurrentIndex(reader->value("preemphasis_id", "1").toInt());
-    ui->spinBox_transmitter_audioDev->setValue(reader->value("audio_deviation", "68250").toInt());
+    /* 66.25 kHz + 6.75 kHz pilot + 2 kHz RDS = 75 kHz at most */
+    ui->spinBox_transmitter_audioDev->setValue(reader->value("audio_deviation", "66250").toInt());
     ui->checkBox_transmitter_pilot->setChecked(reader->value("pilot", "true").toBool());
     ui->spinBox_transmitter_pilot_devi->setValue(reader->value("pilot_deviation", "6750").toInt());
     ui->spinBox_transmitter_pilot_freq->setValue(reader->value("pilot_frequency", "19000").toInt());

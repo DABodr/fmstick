@@ -85,6 +85,12 @@ English.
   RPS (Si4712/13 only). No "find a free frequency".
 - RDS text must go through `toRdsCharset()` (`rdstext.h`): receivers use the
   RDS character set, not UTF-8.
+- Deviation budget: audio 66.25 kHz + pilot 6.75 + RDS 2 = 75 kHz (the
+  default since 2026-11-26; the chip's own default is 68.25 kHz, which
+  `fmtx.c` must keep as the reset value). Measured with the RTL-SDR (IQ
+  capture, phase-difference discriminator, ~4 % high on this dongle): under
+  75 kHz with the sources at 100 %; VLC at 153 % (+11 dB, clipped input)
+  gave brief peaks around 79 kHz despite the chip's limiter.
 - TEF6686 receivers (PE5PVB firmware, source on GitHub) with "RT buffering"
   only show a RadioText when the A/B flag toggles again, i.e. when the next
   text starts. So each new text is sent again 6 s later with the flag

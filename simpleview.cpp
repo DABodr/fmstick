@@ -27,8 +27,9 @@ static QByteArray webStateJson = "{}";
 
 /* Power presets, dBµV (the Si4711 accepts 88..120). */
 static const int POWER_PRESETS[3] = { 88, 104, 120 };
-/* Audio deviation that gives a 75 kHz total with the 6.75 kHz pilot. */
-static const int STANDARD_DEVIATION = 68250;
+/* Audio deviation that keeps the total at 75 kHz with the 6.75 kHz pilot
+   and 2 kHz of RDS (measured with an RTL-SDR: 6.99 kHz of pilot). */
+static const int STANDARD_DEVIATION = 66250;
 /* Below this the audio is inaudible on a receiver. */
 static const uint32_t SILENT_DEVIATION = 1000;
 
@@ -598,7 +599,7 @@ void SimpleView::refresh()
             : "QPushButton { background:#15803D; color:#FFFFFF; border:0; border-radius:12px; font-size:17px; font-weight:700; }"
               "QPushButton:hover { background:#166534; } QPushButton:disabled { background:#E6E9EE; color:#5B6470; }");
 
-    /* modulation: 100 % = the standard 68.25 kHz audio deviation */
+    /* modulation: 100 % = the standard 66.25 kHz audio deviation */
     int percent = (int)((effective * 100 + STANDARD_DEVIATION / 2) / STANDARD_DEVIATION);
     QString modText, modColor = "#16A34A", modTextColor = "#14532D";
     if (state == Disconnected) {
