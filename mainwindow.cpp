@@ -9,6 +9,7 @@
  * Modified 2026-11-25 by Aurel: apply the saved language at startup.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
+ * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setupUsbVolumeUi();
     simpleView = new SimpleView(this, ui);
     simpleView->install();
+    rtRepeatTimer.setSingleShot(true);
+    rtRepeatTimer.setInterval(6000);   /* the text received in full at least twice */
+    connect(&rtRepeatTimer, &QTimer::timeout, this, &MainWindow::repeatRt);
 
     ui->lineEdit_sw_ver->setText(CurrentVersion);
     ui->checkBox_sw_runAtStartup->setChecked(GetRunAtStartup());
@@ -553,6 +557,9 @@ void MainWindow::RedrawEverything(bool bFound)
         QString onAir;
         if(OnAir::recall("ps", &onAir))
             ui->lineEdit_station_id->setText(onAir);
+        /* the A/B flag on air: ours if the chip still sends our text,
+           else the EEPROM's, always A */
+        fmtxRDSSetRtABFlag(OnAir::recall("rt_ab", &onAir) ? onAir.toInt() : 0);
         if(OnAir::recall("rt", &onAir)) {
             ui->plainTextEdit_rds_rt->blockSignals(true);
             ui->plainTextEdit_rds_rt->setPlainText(onAir);

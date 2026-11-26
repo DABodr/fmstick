@@ -6,6 +6,7 @@
  * (C) 2011 Serge <piratfm@gmail.com>
  * Modified 2026-11-25 by Aurel: empty RadioText sent as spaces, A/B flag toggled per message.
  * Modified 2026-11-26 by Aurel: RadioText ended by a carriage return, only the segments needed.
+ * Modified 2026-11-26 by Aurel: the A/B flag of the RadioText on air can be read and set.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2025,6 +2026,18 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtPlusInfo(int content1, 
 
 /* RadioText A/B flag (bit 4 of block B), toggled for each new message */
 static uint8_t rtTextAB = 0;
+
+/* The flag of the message on air, so that the next one really toggles it
+   after an app restart (the chip keeps sending the previous message). */
+EXTERN FMTX_API_EXPORT FMTX_API_CALL void fmtxRDSSetRtABFlag(int flagB)
+{
+    rtTextAB = flagB ? 0x10 : 0x00;
+}
+
+EXTERN FMTX_API_EXPORT FMTX_API_CALL int fmtxRDSGetRtABFlag(void)
+{
+    return rtTextAB ? 1 : 0;
+}
 
 EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtMessage(const char *messages)
 {

@@ -4,6 +4,7 @@
  * (part of FmStick).
  *
  * (C) 2011 Serge <piratfm@gmail.com>
+ * Modified 2026-11-26 by Aurel: the A/B flag of the RadioText on air can be read and set.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -362,6 +363,9 @@ EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetPsMessageById(uint8_t Id,
 
 EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSGetRtMessage(char *messages); //returns one long string with RT message
 EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtMessage(const char *message);
+/* RadioText A/B flag of the message on air (0 = A, 1 = B) */
+EXTERN FMTX_API_EXPORT FMTX_API_CALL void fmtxRDSSetRtABFlag(int flagB);
+EXTERN FMTX_API_EXPORT FMTX_API_CALL int fmtxRDSGetRtABFlag(void);
 /* RTPlus info must be setted after Rt message due fmtxRDSSetRtMessage() flusher circular buffer */
 EXTERN FMTX_API_EXPORT FMTX_API_CALL uint8_t fmtxRDSSetRtPlusInfo(int content1, int content1_pos, int content1_len,
                                                                    int content2, int content2_pos, int content2_len);

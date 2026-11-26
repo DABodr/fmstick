@@ -8,6 +8,7 @@
  * Modified 2026-11-25 by Aurel: find translations next to the binary too.
  * Modified 2026-11-25 by Aurel: simple main screen and restyled advanced mode.
  * Modified 2026-11-25 by Aurel: web UI address, live changes and state.
+ * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,6 +218,9 @@ public slots:
     void updateHTTPListenerAccess();
     bool updateItemFromHTTPListener(QObject *obj, QString *value);
     void showHTTPListenerAddress();
+    /* a RadioText was sent live: remember it, and send it again shortly */
+    void rtSent(const QString &text);
+    void repeatRt();
     bool applyItemFromHTTPListener(QObject *obj, QString *value);
     bool openBrowser(const QString& rUrl, QWidget* parent=NULL);
 
@@ -275,6 +279,10 @@ private:
 
     /* simple main screen, see simpleview.h */
     SimpleView *simpleView;
+    /* RadioText sent again with the A/B flag toggled, see rtSent() */
+    QTimer rtRepeatTimer;
+    QString rtRepeatText;
+    bool rtRepeating = false;
     void retranslateUsbVolumeUi();
     void setupUsbVolumeUi();
     bool usbVolumeToMaxIfNeeded();

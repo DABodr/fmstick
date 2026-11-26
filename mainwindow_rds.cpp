@@ -3,6 +3,7 @@
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
  * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
+ * Modified 2026-11-26 by Aurel: RadioText sent again for receivers that buffer it, A/B flag kept across restarts.
  */
 
 #include "mainwindow.h"
@@ -545,6 +546,34 @@ void MainWindow::updateRDSRTview(QString text)
     ui->plainTextEdit_rds_rt->blockSignals(true);
     ui->plainTextEdit_rds_rt->setPlainText(text);
     ui->plainTextEdit_rds_rt->blockSignals(false);
+    rtSent(text);   /* the querier sent it (RadioText file) */
+}
+
+/* Receivers that buffer the RadioText (the TEF6686 ones with "RT buffering")
+   only show a text when the A/B flag toggles again, i.e. when the next
+   text starts: they always lagged one text behind. Send each new text once
+   more with the flag toggled, once it has been received in full: such
+   receivers show it then. Others clear and refill their display once. */
+void MainWindow::rtSent(const QString &text)
+{
+    OnAir::remember("rt", text);
+    OnAir::remember("rt_ab", QString::number(fmtxRDSGetRtABFlag()));
+    if (rtRepeating)
+        return;
+    rtRepeatText = text;
+    rtRepeatTimer.start();
+}
+
+void MainWindow::repeatRt()
+{
+    QString current = ui->plainTextEdit_rds_rt->toPlainText();
+    while (current.endsWith(' '))
+        current.chop(1);
+    if (!deviceStatus || current != rtRepeatText)
+        return;     /* another text went out meanwhile */
+    rtRepeating = true;
+    applyLive([&]() { SetRDSRT(&current); });   /* RT+ too, when it is on */
+    rtRepeating = false;
 }
 
 int MainWindow::SetRDSRT(QString *text_in)
@@ -565,7 +594,7 @@ int MainWindow::SetRDSRT(QString *text_in)
             qDebug() << "Can't set RDS RT Message";
             SetTransmitIcon(ICON_WARN);
         } else if(fmtxCmdSpecial == FMTX_SPECIAL_FRONTEND) {
-            OnAir::remember("rt", text);   /* shown again on reconnect, see onair.h */
+            rtSent(text);   /* remembered for a reconnect (onair.h), sent again */
         }
         querier->HidAccessMutex.unlock();
     }

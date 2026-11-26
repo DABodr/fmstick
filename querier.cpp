@@ -7,6 +7,7 @@
  * Modified 2026-11-25 by Aurel: port to Qt6.
  * Modified 2026-11-25 by Aurel: RDS text sent in the RDS character set.
  * Modified 2026-11-26 by Aurel: the PS/RT on air are shown again after a restart.
+ * Modified 2026-11-26 by Aurel: the RT from a file is repeated like the others (MainWindow::rtSent).
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,6 @@
 #include "mainwindow.h"
 #include "fmtx.h"
 #include "rdstext.h"
-#include "onair.h"
 #include "logging.h"
 
 Querier::Querier(QObject *parent) :
@@ -181,8 +181,7 @@ void Querier::CheckFrontendFlags()
                     goto err_transfer;
                 } else {
                     //plainTextEdit_rds_rt
-                    setRDSRTMessage(rdsLine);
-                    OnAir::remember("rt", rdsLine);
+                    setRDSRTMessage(rdsLine);     /* remembered there */
                 }
 
                 /* parse and find RT+ tags */
