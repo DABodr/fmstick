@@ -1,3 +1,18 @@
+fmstick (2.0) bookworm; urgency=medium
+
+  * Qt6 port, packaged for Debian 12 (amd64, arm64).
+  * Vast HiFi-FMT support: USB sound card volume, firmware quirks.
+  * Simple main screen in French, restyled advanced mode.
+  * New web page mirroring the simple screen, usable from a phone.
+  * RadioText from the track a media player is playing (MPRIS).
+  * Audio processing presets, 75 kHz deviation budget by default.
+  * RDS: text in the RDS character set, RadioText that TEF receivers
+    show, clock time as UTC with the local offset at each minute.
+  * PS/RT on air remembered across restarts; power also shown in mW.
+  * Many fixes (frequency read on connect, on/off from the menus...).
+
+ -- Aurel <46652797+DABodr@users.noreply.github.com>  Thu, 26 Nov 2026 21:45:00 +0100
+
 fmstick (1.1-1) jaunty; urgency=low
 
   * Initial release

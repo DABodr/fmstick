@@ -1,0 +1,84 @@
+# Debian 12 packages of FmStick for amd64 and arm64, built on native
+# runners in a debian:bookworm container.
+#   - each push to master and each pull request: build and test-install,
+#     the .deb files kept as workflow artifacts;
+#   - a tag v*: the same, then a GitHub release with both .deb files.
+# Copyright (C) 2026 Aurel. GPL v2 or later.
+
+name: Debian packages
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deb:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    container: debian:bookworm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential devscripts equivs
+          mk-build-deps -i -r -t "apt-get -y --no-install-recommends" debian/control
+
+      - name: Build
+        run: |
+          dpkg-buildpackage -b -us -uc
+          mkdir -p out
+          mv ../fmstick_*.deb out/
+          dpkg -I out/*.deb
+          dpkg -c out/*.deb
+
+      - name: Install and run
+        run: |
+          apt-get install -y --no-install-recommends ./out/*.deb xvfb xauth
+          test -x /usr/bin/fmstick
+          test -f /usr/lib/udev/rules.d/60-fmstick.rules
+          test -f /usr/share/fmstick/translations/fmstick_fr.qm
+          test -f /usr/share/applications/fmstick.desktop
+          # starts with no device: must stay up (no missing library or plugin)
+          xvfb-run -a timeout 10 fmstick || test $? -eq 124
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fmstick-${{ matrix.arch }}
+          path: out/*.deb
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: deb
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l dist
+          gh release create "$GITHUB_REF_NAME" dist/*.deb \
+            --repo "$GITHUB_REPOSITORY" --title "FmStick ${GITHUB_REF_NAME#v}" \
+            --notes "Debian 12 (bookworm) packages for amd64 and arm64 (Raspberry Pi OS bookworm 64-bit too).
+
+          Install: \`sudo apt install ./fmstick_*_<arch>.deb\`, then plug the transmitter in (the udev rule lets users drive it)."

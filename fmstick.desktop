@@ -1,14 +1,16 @@
 [Desktop Entry]
-Encoding=UTF-8
+Type=Application
 Name=FmStick
-GenericName=FmStick Controller
+GenericName=FM transmitter control
+GenericName[fr]=Contrôle d'émetteur FM
 GenericName[ru]=FmStick Контроллер Передатчика
 GenericName[uk]=FmStick Контроллер Передавача
-Comment=Control Your FM-Transmitter
+Comment=Control your USB FM/RDS transmitter
+Comment[fr]=Piloter votre émetteur FM/RDS USB
 Comment[ru]=Программа управления ЧМ-передатчиком
 Comment[uk]=Програма управління ЧМ-передавачем
 Exec=fmstick
+Icon=fmstick
 Terminal=false
-Type=Application
-Icon=/usr/share/icons/hicolor/64x64/apps/fmstick.png
-Categories=Qt;KDE;AudioVideo;
+Categories=Qt;AudioVideo;Audio;
+Keywords=FM;RDS;transmitter;radio;Si4711;

@@ -1,15 +1,29 @@
 Source: fmstick
 Section: sound
 Priority: optional
-Maintainer: Serge Gw <piratfm@gmail.com>
-Build-Depends: debhelper (>= 7), libqt4-dev, qt4-dev-tools, qt4-qmake, cmake, libusb-1.0-0-dev
-Standards-Version: 3.8.3
-Homepage: http://tipok.org.ua/node/35
+Maintainer: Aurel <46652797+DABodr@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               qt6-base-dev,
+               qt6-base-dev-tools,
+               qt6-l10n-tools,
+               libusb-1.0-0-dev,
+               libasound2-dev,
+               pkgconf
+Standards-Version: 4.6.2
+Homepage: https://github.com/DABodr/fmstick
+Vcs-Git: https://github.com/DABodr/fmstick.git
+Vcs-Browser: https://github.com/DABodr/fmstick
+Rules-Requires-Root: no
 
 Package: fmstick
 Architecture: any
-Depends: libqt4-core, libqt4-gui, libqt4-network, libgcc1, libusb-1.0-0
-Description: FmStick Control Application
- This package contains application that controls
- FmStick digital FM transmitter, the hardware
- based on TAS1020B and SI4711 chips.
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: qt6-qpa-plugins
+Description: control application for USB FM/RDS transmitters (Si4711)
+ Sets the frequency, power, audio processing and RDS (station name,
+ RadioText, clock time) of USB FM transmitters built on a Si4711 chip:
+ the FmStick and the Vast HiFi-FMT.
+ .
+ Simple main screen, advanced settings, RadioText from the track a media
+ player is playing (MPRIS), and a web page to control the transmitter
+ from a phone. English, French, Russian and Ukrainian.

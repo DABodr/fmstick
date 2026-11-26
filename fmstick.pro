@@ -9,6 +9,7 @@
 # Modified 2026-11-26 by Aurel: RadioText from a media player (MPRIS, Qt D-Bus).
 # Modified 2026-11-26 by Aurel: PS/RT on air remembered across restarts.
 # Modified 2026-11-26 by Aurel: transmit power also shown as an estimate in mW.
+# Modified 2026-11-26 by Aurel: version 2.0; translations built and installed out of tree.
 #
 #-------------------------------------------------
 include(qtsingleapplication/common.pri)
@@ -33,11 +34,11 @@ macx {
 # disable debug messages in release
 CONFIG(debug, debug|release) {
     # Define version string (see below for releases)
-    VER = 1.1dbg
+    VER = 2.0dbg
 } else {
     DEFINES += QT_NO_DEBUG
     DEFINES += QT_NO_DEBUG_OUTPUT
-    VER = 1.1
+    VER = 2.0
 }
 
 # Tip from: http://www.qtcentre.org/wiki/index.php?title=Version_numbering_using_QMake
@@ -139,11 +140,12 @@ OTHER_FILES += AUTHORS.txt LICENSE.txt NEWS.txt README.txt \
         win32:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]\lrelease.exe
         else:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
     }
-    isEmpty(TS_DIR):TS_DIR = translations
+    # in the build directory, where "make install" takes them
+    isEmpty(TS_DIR):TS_DIR = $$OUT_PWD/translations
     TSQM.name = lrelease ${QMAKE_FILE_IN}
     TSQM.input = TRANSLATIONS
     TSQM.output = $$TS_DIR/${QMAKE_FILE_BASE}.qm
-    TSQM.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN}
+    TSQM.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN} -qm $$TS_DIR/${QMAKE_FILE_BASE}.qm
     TSQM.CONFIG = no_link
     QMAKE_EXTRA_COMPILERS += TSQM
     PRE_TARGETDEPS += compiler_TSQM_make_all
@@ -169,7 +171,7 @@ unix {
   icon64.files += images/$${TARGET}.png
 
   i18n.path = $$DATADIR/$${TARGET}/translations
-  i18n.extra = -$(INSTALL_FILE) translations/*.qm $(INSTALL_ROOT)$${i18n.path}
+  i18n.extra = $(MKDIR) $(INSTALL_ROOT)$${i18n.path} && $(INSTALL_FILE) $$TS_DIR/*.qm $(INSTALL_ROOT)$${i18n.path}
   i18n.uninstall = -$(DEL_FILE) -r $(INSTALL_ROOT)$${i18n.path}/*.qm
   TRSTR = '\\"$${i18n.path}\\"'          # place quotes around the version string
   DEFINES += TRANSLATIONSPATH=\"$${TRSTR}\"
