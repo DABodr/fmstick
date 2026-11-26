@@ -549,7 +549,7 @@ It's set pre-defined values to tune compressor/limiter.</string>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Minimal</string>
+                     <string>Light</string>
                     </property>
                    </item>
                    <item>
@@ -559,7 +559,7 @@ It's set pre-defined values to tune compressor/limiter.</string>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Agressive</string>
+                     <string>Strong</string>
                     </property>
                    </item>
                    <item>

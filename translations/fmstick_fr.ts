@@ -90,16 +90,8 @@ Applique des valeurs prédéfinies au compresseur et au limiteur.</translation>
             <translation>Désactivé</translation>
         </message>
         <message>
-            <source>Minimal</source>
-            <translation>Léger</translation>
-        </message>
-        <message>
             <source>Normal</source>
             <translation>Normal</translation>
-        </message>
-        <message>
-            <source>Agressive</source>
-            <translation>Agressif</translation>
         </message>
         <message>
             <source>Custom...</source>
@@ -2062,6 +2054,14 @@ au maximum, c'est la déviation réglée dans l'onglet Émetteur ;
         <message>
             <source>Address: %1</source>
             <translation>Adresse : %1</translation>
+        </message>
+        <message>
+            <source>Light</source>
+            <translation>Léger</translation>
+        </message>
+        <message>
+            <source>Strong</source>
+            <translation>Fort</translation>
         </message>
     </context>
     <context>

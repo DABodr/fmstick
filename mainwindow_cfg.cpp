@@ -8,6 +8,7 @@
  * Modified 2026-11-25 by Aurel: remember the simple/advanced mode.
  * Modified 2026-11-26 by Aurel: factory defaults: "FM STICK", "FM RDS transmitter", 100.0 MHz.
  * Modified 2026-11-26 by Aurel: default audio deviation 66.25 kHz, for 75 kHz in total.
+ * Modified 2026-11-26 by Aurel: defaults: RDS on, force B, "Normal" processing, auto-connect.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -220,7 +221,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
 
         reader->beginGroup("core");
         ui->checkBox_rewriteCfg->setChecked(reader->value("softcfg", "false").toBool());
-        ui->checkBox_sw_autoconnect->setChecked(reader->value("autoconnect", "false").toBool());
+        ui->checkBox_sw_autoconnect->setChecked(reader->value("autoconnect", "true").toBool());
         ui->checkBox_sw_live_edit->setChecked(reader->value("liveedit", "false").toBool());
         /* http server staff */
         ui->checkBox_sw_remote->setChecked(reader->value("http_serve", "false").toBool());
@@ -235,13 +236,14 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
     }
 
     reader->beginGroup("audio");
-    ui->checkBox_audio_enablecompressor->setChecked(reader->value("compressor", "false").toBool());
-    ui->spinBox_audiocompressorThreshold->setValue(reader->value("comp_threshold", "-40").toInt());
-    ui->spinBox_audioCompressorGain->setValue(reader->value("comp_gain", "15").toInt());
-    ui->comboBox_audioCompressorReleasetime->setCurrentIndex(reader->value("comp_reltime_id", "4").toInt());
-    ui->doubleSpinBox_audioCompressorAttackTime->setValue(reader->value("comp_attacktime", "0.5").toDouble());
+    /* defaults: the "Normal" compressor/limiter preset, see SetAudioCompLimByPreset() */
+    ui->checkBox_audio_enablecompressor->setChecked(reader->value("compressor", "true").toBool());
+    ui->spinBox_audiocompressorThreshold->setValue(reader->value("comp_threshold", "-20").toInt());
+    ui->spinBox_audioCompressorGain->setValue(reader->value("comp_gain", "10").toInt());
+    ui->comboBox_audioCompressorReleasetime->setCurrentIndex(reader->value("comp_reltime_id", "2").toInt());
+    ui->doubleSpinBox_audioCompressorAttackTime->setValue(reader->value("comp_attacktime", "2.0").toDouble());
     ui->checkBox_audioLimiterEnable->setChecked(reader->value("limiter", "true").toBool());
-    ui->doubleSpinBox_audio_lim_release_time->setValue(reader->value("lim_releasetime", "5.0196").toDouble());
+    ui->doubleSpinBox_audio_lim_release_time->setValue(reader->value("lim_releasetime", "10.0392").toDouble());
     ui->checkBox_asq_overmoddetect->setChecked(reader->value("asq_overmod", "false").toBool());
     ui->checkBox_asq_detectLow->setChecked(reader->value("asq_low", "false").toBool());
     ui->spinBox_asq_detectLowThreshold->setValue(reader->value("asq_low_threshold", "-40").toInt());
@@ -262,7 +264,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
     ui->spinBox_transmitter_pilot_devi->setValue(reader->value("pilot_deviation", "6750").toInt());
     ui->spinBox_transmitter_pilot_freq->setValue(reader->value("pilot_frequency", "19000").toInt());
     ui->checkBox_transmitter_lmr->setChecked(reader->value("lmr", "true").toBool());
-    ui->checkBox_transmitter_rds->setChecked(reader->value("rds", "false").toBool());
+    ui->checkBox_transmitter_rds->setChecked(reader->value("rds", "true").toBool());
     ui->spinBox_transmitter_rds_devi->setValue(reader->value("rds_deviation", "2000").toInt());
     ui->checkBox_transmitter_enabled->setChecked(reader->value("tx_enabled", "true").toBool());
     ui->doubleSpinBox_transmitter_freq->setValue(reader->value("tx_frequency", "100.0").toDouble());
@@ -277,7 +279,7 @@ void MainWindow::readSettings(QSettings *reader, bool txOnly)
     ui->checkBox_rds_compr_code->setChecked(reader->value("compressed_code", "false").toBool());
     ui->checkBox_rds_art_head->setChecked(reader->value("artifical_head", "false").toBool());
     ui->checkBox_rds_is_stereo->setChecked(reader->value("is_stereo", "true").toBool());
-    ui->checkBox_rds_forceb->setChecked(reader->value("force_b", "false").toBool());
+    ui->checkBox_rds_forceb->setChecked(reader->value("force_b", "true").toBool());
     ui->radioButton_rds_music->setChecked(reader->value("is_music", "true").toBool());
     ui->radioButton_rds_speech->setChecked(!ui->radioButton_rds_music->isChecked());
     ui->comboBox_rds_pty->setCurrentIndex(reader->value("pty_id", "0").toInt());

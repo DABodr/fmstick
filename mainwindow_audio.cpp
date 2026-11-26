@@ -1,3 +1,7 @@
+/*
+ * Part of FmStick, see LICENSE.txt.
+ * Modified 2026-11-26 by Aurel: compressor/limiter presets ordered by their measured loudness.
+ */
 
 #include "mainwindow.h"
 #include "querier.h"
@@ -174,11 +178,11 @@ void MainWindow::SetAudioCompLimPresetByParams()
     }
 
     //comp/lim: both checked, now check values
-    if( ui->spinBox_audiocompressorThreshold->value() == -40 &&
-            ui->spinBox_audioCompressorGain->value() == 15 &&
-            ui->comboBox_audioCompressorReleasetime->currentIndex() == 0/*100*/ &&
-            ui->doubleSpinBox_audioCompressorAttackTime->value() == 5.0 &&
-            ui->doubleSpinBox_audio_lim_release_time->value() == 5.0196) {
+    if( ui->spinBox_audiocompressorThreshold->value() == -15 &&
+            ui->spinBox_audioCompressorGain->value() == 5 &&
+            ui->comboBox_audioCompressorReleasetime->currentIndex() == 4/*1000*/ &&
+            ui->doubleSpinBox_audioCompressorAttackTime->value() == 0.5 &&
+            ui->doubleSpinBox_audio_lim_release_time->value() == 51.2) {
         //comp/lim: minimal
         ui->comboBox_audioPreset->blockSignals(true);
         ui->comboBox_audioPreset->setCurrentIndex(1);
@@ -202,11 +206,11 @@ void MainWindow::SetAudioCompLimPresetByParams()
         return;
     }
 
-    if( ui->spinBox_audiocompressorThreshold->value() == -15 &&
-            ui->spinBox_audioCompressorGain->value() == 5 &&
-            ui->comboBox_audioCompressorReleasetime->currentIndex() == 4/*1000*/ &&
+    if( ui->spinBox_audiocompressorThreshold->value() == -30 &&
+            ui->spinBox_audioCompressorGain->value() == 20 &&
+            ui->comboBox_audioCompressorReleasetime->currentIndex() == 1/*200*/ &&
             ui->doubleSpinBox_audioCompressorAttackTime->value() == 0.5 &&
-            ui->doubleSpinBox_audio_lim_release_time->value() == 51.2) {
+            ui->doubleSpinBox_audio_lim_release_time->value() == 5.0196) {
         //comp/lim: normal
         ui->comboBox_audioPreset->blockSignals(true);
         ui->comboBox_audioPreset->setCurrentIndex(3);
@@ -234,7 +238,11 @@ void MainWindow::SetAudioCompLimPresetByParams()
 
 void MainWindow::SetAudioCompLimByPreset(int iVal)
 {
-    /*0 - dis, 1 - minimal, 2 - normal, 3 - agressive, 4 - custom */
+    /* 0 off, 1 light, 2 normal, 3 strong, 4 custom. Ordered by the loudness
+       they give, measured on air with an RTL-SDR (gain over unprocessed
+       audio): light +2.0 dB, normal +4.4 dB, strong +5.2 dB, peaks under
+       75 kHz. The original "minimal" (-40 dBFS, 15 dB) was as loud as
+       normal, and "agressive" (-15 dBFS, 5 dB) the quietest. */
     if(iVal==4) {
         ui->frame_comp_lim->setVisible(true);
     } else {
@@ -248,12 +256,12 @@ void MainWindow::SetAudioCompLimByPreset(int iVal)
         break;
     case 1:
         ui->checkBox_audio_enablecompressor->setChecked(true);
-        ui->spinBox_audiocompressorThreshold->setValue(-40);
-        ui->spinBox_audioCompressorGain->setValue(15);
-        ui->comboBox_audioCompressorReleasetime->setCurrentIndex(0/*100*/);
-        ui->doubleSpinBox_audioCompressorAttackTime->setValue(5.0);
+        ui->spinBox_audiocompressorThreshold->setValue(-15);
+        ui->spinBox_audioCompressorGain->setValue(5);
+        ui->comboBox_audioCompressorReleasetime->setCurrentIndex(4/*1000*/);
+        ui->doubleSpinBox_audioCompressorAttackTime->setValue(0.5);
         ui->checkBox_audioLimiterEnable->setChecked(true);
-        ui->doubleSpinBox_audio_lim_release_time->setValue(5.0196);
+        ui->doubleSpinBox_audio_lim_release_time->setValue(51.2);
         break;
     case 2:
         ui->checkBox_audio_enablecompressor->setChecked(true);
@@ -266,12 +274,12 @@ void MainWindow::SetAudioCompLimByPreset(int iVal)
         break;
     case 3:
         ui->checkBox_audio_enablecompressor->setChecked(true);
-        ui->spinBox_audiocompressorThreshold->setValue(-15);
-        ui->spinBox_audioCompressorGain->setValue(5);
-        ui->comboBox_audioCompressorReleasetime->setCurrentIndex(4/*1000*/);
+        ui->spinBox_audiocompressorThreshold->setValue(-30);
+        ui->spinBox_audioCompressorGain->setValue(20);
+        ui->comboBox_audioCompressorReleasetime->setCurrentIndex(1/*200*/);
         ui->doubleSpinBox_audioCompressorAttackTime->setValue(0.5);
         ui->checkBox_audioLimiterEnable->setChecked(true);
-        ui->doubleSpinBox_audio_lim_release_time->setValue(51.2);
+        ui->doubleSpinBox_audio_lim_release_time->setValue(5.0196);
         break;
     }
 }
